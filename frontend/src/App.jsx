@@ -13,7 +13,6 @@ function App() {
       <h1 className='text-white'>
       Hello world!
     </h1>
-
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
