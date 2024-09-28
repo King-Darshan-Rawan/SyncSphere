@@ -5,15 +5,14 @@ import Home from "./../Pages/Home";
 import About from "./../Pages/About";
 import Services from "./../Pages/Services";
 import Contact from "./../Pages/Contact";
-import './index.css'; 
+import './App.css'; 
 function App() {
   return (
     <Router>
       <Navbar />
-      <div className='bg-black text-white'>
-        jbchhjqbhugc
-      </div>
-
+      <h1 className='text-white'>
+      Hello world!
+    </h1>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
