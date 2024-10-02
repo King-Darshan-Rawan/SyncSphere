@@ -14,6 +14,7 @@ const port = 3000;
 
 
 import userRouter from "./routes/user.js"
+import workspaceRouter from "./routes/workspace.js"
 
 main().then(()=>{
   console.log("connected to dataBase");
@@ -34,6 +35,7 @@ app.get("/",(req,res)=>{
 
 
 app.use("/users" , userRouter);
+app.use("/workspace" , workspaceRouter);
 
 
 app.listen(port, function () {
