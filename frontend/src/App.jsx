@@ -7,10 +7,11 @@ import Home from "./Pages/Informative/Home";
 import About from "./Pages/Informative/About";
 import Services from "./Pages/Informative/Services";
 import Contact from "./Pages/Informative/Contact";
-import MeetPage from "./Pages/Subjective/MeetPage";
-import ChatPage from "./Pages/Subjective/ChatPage";
+import MeetPage from "./Pages/Subjective/MeetPages/MeetPage";
+import ChatPage from "./Pages/Subjective/ChatPages/ChatPage";
 import SignIn from "./Pages/Permitive/SingIn";
 import SignUp from "./Pages/Permitive/SingUp";
+import ChatList from "./Pages/Subjective/ChatPages/ChatList";
 function App() {
   return (
     <Router>
@@ -22,9 +23,12 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/meet" element={<MeetPage />} />
         <Route path="/chat" element={<ChatPage />} />
+        <Route path="/chat/:chatid" element={<ChatList />} />
         <Route path="/SignIn" element={<SignIn />} />
         <Route path="/SingUp" element={<SignUp />} />
       </Routes>
+      <br />
+      <br />
       <Footer/>
     </Router>
   );
