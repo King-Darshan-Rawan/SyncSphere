@@ -3,7 +3,7 @@ import express from "express";
 const router = express.Router();
 
 router.route("/register")
-.get(register)
+.post(register)
 
 
 export default router

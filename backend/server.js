@@ -2,7 +2,7 @@ import 'dotenv/config';
 
 import mongoose from 'mongoose';
 import express from "express";
-
+import bodyParser from "body-parser";
 
 // const DB_URL = process.env.MONGO_ATLAS_WEB;
 // console.log(DB_URL);
@@ -12,6 +12,8 @@ const DB_URL = "mongodb+srv://aniketdekate1:AniketDarshanWebProject@cluster0.bd4
 const app = express();
 const port = 3000;
 
+
+app.use(bodyParser.json());
 
 import userRouter from "./routes/user.js"
 import workspaceRouter from "./routes/workspace.js"
