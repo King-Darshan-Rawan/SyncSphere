@@ -7,7 +7,8 @@ import Home from "./Pages/Home";
 import About from "./Pages/About";
 import Services from "./Pages/Services";
 import Contact from "./Pages/Contact";
-
+import MeetPage from "./Pages/MeetPage";
+import ChatPage from "./Pages/ChatPage";
 function App() {
   return (
     <Router>
@@ -17,6 +18,8 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/services" element={<Services />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/meet" element={<MeetPage />} />
+        <Route path="/chat" element={<ChatPage />} />
       </Routes>
       <Footer/>
     </Router>
