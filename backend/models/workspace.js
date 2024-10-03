@@ -17,7 +17,7 @@ const workspaceSchema = new mongoose.Schema({
     members:{
         type:Array,
         minItems: 0,
-        maxItems: 5,
+        maxItems: 10,
     },
     empty:{
         type:Boolean,
