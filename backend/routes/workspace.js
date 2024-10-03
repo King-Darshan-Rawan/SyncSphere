@@ -3,7 +3,7 @@ import express from "express";
 const router = express.Router();
 
 router.route("/create")
-.get(Createworkspace)
+.post(Createworkspace)
 
 
 export default router

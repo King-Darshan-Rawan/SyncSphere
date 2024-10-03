@@ -17,7 +17,30 @@ let register = async(req,res)=>{
     }
 }
 
+let login = async(req,res)=>{
+    let {username , password}= req.body
+    console.log(username,password)
+  
+    try{
+      let check =await User.findOne({username:username});
+      console.log(check);
+      if(check){
+        if ( check.password == password ){
+          console.log("user has loged in")
+          res.status(200).json({msg:"login successful"})
+
+        }else{
+          console.log("a user has inter a incorrect password");
+          res.status(400).json("incorrect password");
+        }
+      }
+      else{
+        res.status(400).json("no user Exist with this username");
+      }
+    }catch(err){
+      res.status(500).json(err)
+    }
+  } 
 
 
-
-export {register}
+export {register,login}
