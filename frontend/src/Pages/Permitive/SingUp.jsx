@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Avatar, Button, TextField, Link, Grid, Box, Typography, Container } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
+import { Link as RouterLink } from "react-router-dom";
 export default function SignUp() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -89,9 +90,9 @@ export default function SignUp() {
           </Button>
           <Grid container justifyContent="flex-end">
             <Grid item>
-              <Link href="/signin" variant="body2">
+              <RouterLink to="/SingIn" variant="body2">
                 Already have an account? Sign in
-              </Link>
+              </RouterLink>
             </Grid>
           </Grid>
         </Box>
