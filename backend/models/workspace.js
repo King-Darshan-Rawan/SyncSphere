@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const workspaceSchema = new mongoose.Schema({
     owner :{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"Porter",
+        ref:"User",
     },
     wsname:{
         type:String,
