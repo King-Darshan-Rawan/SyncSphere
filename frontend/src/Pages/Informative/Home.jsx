@@ -42,7 +42,7 @@ function Meet() {
         }}
       >
         <Typography variant="h3" sx={{ fontSize: { xs: '2rem', sm: '3rem', md: '4rem' } }}>
-          Welcome to Our Meet Application
+          Welcome to Our Team building Application
         </Typography>
         <Button
           variant="contained"
