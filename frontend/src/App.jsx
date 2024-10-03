@@ -22,7 +22,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/meet" element={<MeetPage />} />
         <Route path="/chat" element={<ChatPage />} />
-        <Route path="/SingIn" element={<SignIn />} />
+        <Route path="/SignIn" element={<SignIn />} />
         <Route path="/SingUp" element={<SignUp />} />
       </Routes>
       <Footer/>

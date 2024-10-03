@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Container, Button, Grid } from '@mui/material';
 import { Element } from 'react-scroll';
 import NavbarInformative from '../../Components/NavbarInformative';
-
+import { Link as RouterLink } from "react-router-dom";
 function Meet() {
   const [navbarColor, setNavbarColor] = useState('white');
 
@@ -44,6 +44,8 @@ function Meet() {
         <Typography variant="h3" sx={{ fontSize: { xs: '2rem', sm: '3rem', md: '4rem' } }}>
           Welcome to Our Team building Application
         </Typography>
+
+        <RouterLink to="/SignIn" variant="body2">
         <Button
           variant="contained"
           color="primary"
@@ -63,6 +65,8 @@ function Meet() {
             Get Started
           </b>
         </Button>
+                
+              </RouterLink>
       </Box>
 
       {/* About Section */}
