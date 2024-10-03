@@ -13,10 +13,23 @@ const app = express();
 const port = 3000;
 
 
-app.use(bodyParser.json());
+
 
 import userRouter from "./routes/user.js"
 import workspaceRouter from "./routes/workspace.js"
+
+
+async function main() {
+  
+  try{
+    await mongoose.connect(DB_URL);
+  }
+  catch(err){
+    res.send(err)
+  }
+  
+};
+
 
 main().then(()=>{
   console.log("connected to dataBase");
@@ -25,17 +38,13 @@ main().then(()=>{
 });
 
 
-async function main() {
-  await mongoose.connect(DB_URL);
-};
-
 
 app.get("/",(req,res)=>{
   res.send("reached");
 })
 
 
-
+app.use(bodyParser.json());
 app.use("/users" , userRouter);
 app.use("/workspace" , workspaceRouter);
 
