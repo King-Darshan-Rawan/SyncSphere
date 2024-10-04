@@ -25,7 +25,7 @@ async function main() {
     await mongoose.connect(DB_URL);
   }
   catch(err){
-    res.send(err)
+    console.error("not defined",err)
   }
   
 };
