@@ -10,6 +10,18 @@ export default function SignIn() {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Add sign-in logic here
+
+    fetch(`http://localhost:3000/users/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}` , {
+      method: "GET",
+      headers: {
+        'Content-type': 'application/json'
+      },
+      })
+      .then(response=>response.json())
+      .then((data)=>{
+        console.log(data);
+      })
+
     console.log({ email, password });
   };
 

@@ -3,6 +3,7 @@ import 'dotenv/config';
 import mongoose from 'mongoose';
 import express from "express";
 import bodyParser from "body-parser";
+import cors from "cors";
 
 // const DB_URL = process.env.MONGO_ATLAS_WEB;
 // console.log(DB_URL);
@@ -17,6 +18,11 @@ const port = 3000;
 
 import userRouter from "./routes/user.js"
 import workspaceRouter from "./routes/workspace.js"
+
+
+
+app.use(cors());
+app.use(bodyParser.json());
 
 
 async function main() {
@@ -44,7 +50,6 @@ app.get("/",(req,res)=>{
 })
 
 
-app.use(bodyParser.json());
 app.use("/users" , userRouter);
 app.use("/workspace" , workspaceRouter);
 

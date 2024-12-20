@@ -12,6 +12,19 @@ export default function SignUp() {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Add sign-up logic here
+
+    fetch('http://localhost:3000/users/register' , {
+      method: "POST",
+      headers: {
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify( {firstName, lastName, email, password })
+      })
+      .then(response=>response.json())
+      .then(()=>{
+        console.log("sucessful");
+      })
+        
     console.log({ firstName, lastName, email, password });
   };
 

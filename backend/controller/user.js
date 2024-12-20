@@ -2,7 +2,11 @@ import { User } from "../models/user.js";
 
 
 let register = async(req,res)=>{
-    let {username , email , password} = req.body;
+  console.log("1--------------------------------------------");
+    let {firstName, lastName , email , password} = req.body;
+    const username = firstName + " " + lastName;
+    console.log("2-----------------------")
+    console.log({username , email  ,password});
     try{
         let check = await User.findOne({username:username});
         if(check){
@@ -18,11 +22,11 @@ let register = async(req,res)=>{
 }
 
 let login = async(req,res)=>{
-    let {username , password}= req.body
-    console.log(username,password)
+    let {email , password}= req.query;
+    console.log(email,password);
   
     try{
-      let check =await User.findOne({username:username});
+      let check =await User.findOne({email:email});
       console.log(check);
       if(check){
         if ( check.password == password ){
@@ -35,7 +39,7 @@ let login = async(req,res)=>{
         }
       }
       else{
-        res.status(400).json("no user Exist with this username");
+        res.status(400).json("no user Exist with this email");
       }
     }catch(err){
       res.status(500).json(err)
