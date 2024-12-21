@@ -78,7 +78,8 @@ body {
     border-radius: 2%;
     cursor: pointer;
     width: 48%;
-    
+    font-size:x-large;
+    font-weight: bolder;
   }
   .bottom-spc{
     font-size:large;
@@ -160,13 +161,48 @@ body {
     border-top-right-radius: 25%;
     border-bottom-right-radius: 25%;
   }
-  
-  .team-task-section {
-    width: 30%;
+  .chatmain-container{
     display: flex;
-    flex-direction: column;
+    height: 100%;
+    width: 30%;
+    /* justify-content: space-around; */
+    padding: 0;
+    margin: 0;
+  }
+  .hider-container{
+    width: 10%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-items: left;
+    position: relative;
+    
   }
   
+  .hider {
+    position: absolute; /* Absolute positioning for smooth transition */
+    top: 50%;
+    right: 100%; 
+    width: 100%;
+    /* padding: 10px 20px; */
+    background-color: #007bff;
+    color: white;
+    border-left: 1px solid black;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease; /* Smooth transition for movement */
+  }
+  
+
+  .sidebar-open {
+    left: 0%; /* Move button to the right when sidebar is open */
+  }
+  
+  .sidebar-closed {
+    left: 900%; /* Move button to the original position when sidebar is closed */
+  }
+
+
   .team-section,
   .task-section {
     flex: 1;
@@ -194,7 +230,7 @@ body {
     background-color: #0056b3;
   }
   .task-team{
-    width: 28%;
+    width: 85%;
     padding-left: 1%;
   }
   .task-top{
@@ -203,17 +239,17 @@ body {
     justify-content: space-evenly;
     height: 10%;
     width: 100%;
-    padding-top: 0.5%;
+    padding-top: 2%;
   }
   .team{
     height: 50%;
     width: 100%;
-    border: 1px solid black;
+    border-bottom:1px solid gray;
   }
   .task{
     height: 48%;
     width: 100%;
-    border: 1px solid black;
+    
   }
   .titel-sub-cont{
     padding-left: 1%;
@@ -222,3 +258,8 @@ body {
     color: #ccc;
     background-color: #0056b3;
   }
+  .inactive-sidebar{
+    display: none;
+    transition: all 0.3s ease;
+  }
+  
