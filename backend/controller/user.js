@@ -24,15 +24,12 @@ let register = async(req,res)=>{
 
 let login = async(req,res)=>{
     let {userConfirm , password}= req.body;
-    console.log(userConfirm,password);
-  
     try{
       const user = await User.findOne({
         $or: [{ userId: userConfirm }, { email: userConfirm }],
       });
       if(user){
         const isPasswordValid = await bcrypt.compare(password,user.password); 
-        console.log(isPasswordValid);
         if (isPasswordValid){
           console.log("1");
           const token = jwt.sign({ username : userConfirm}, SECRET_KEY, {
