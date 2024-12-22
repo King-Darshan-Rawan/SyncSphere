@@ -13,19 +13,19 @@ import { Link as RouterLink } from "react-router-dom";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 export default function SignIn() {
-  const [email, setEmail] = useState("");
+  const [userConfirm, setUserConfirm] = useState("");
   const [password, setPassword] = useState("");
-
+  
   const handleSubmit = (e) => {
     e.preventDefault();
     // Add sign-in logic here
 
     fetch(
-      `http://localhost:3000/users/login?email=${encodeURIComponent(
-        email
+      `http://localhost:3000/users/login?userConfirm=${encodeURIComponent(
+        userConfirm
       )}&password=${encodeURIComponent(password)}`,
       {
-        method: "GET",
+        method: "POST",
         headers: {
           "Content-type": "application/json",
         },
@@ -36,7 +36,7 @@ export default function SignIn() {
         console.log(data);
       });
 
-    console.log({ email, password });
+    console.log({ userConfirm, password });
   };
 
   return (
@@ -65,7 +65,7 @@ export default function SignIn() {
             name="email"
             autoComplete="email"
             autoFocus
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setUserConfirm(e.target.value)}
           />
           <TextField
             margin="normal"
