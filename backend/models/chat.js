@@ -1,28 +1,15 @@
 import mongoose from "mongoose";
 
 const ChatSchema = new mongoose.Schema({
-    // chatname:{
-    //     type: String,
-    //     required:true,
-    // },
-    // email :{
-    //     type : String,
-    //     required:true,
-    // },
-    // password :{
-    //     type : String,
-    //     required:true,
-    // },
-    // image:{
-    //     url : String,
-    //     filename : String,
-    // },
-    // linkedin:{
-    //     type:String,
-    // },
-    // github:{
-    //     type:String,
-    // }
+    users :[{
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "User",
+    }],
+    latestMessage: {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "Message",
+
+    },
 });
 
 
