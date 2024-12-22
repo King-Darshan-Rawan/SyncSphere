@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import axios from "axios";
+import jwtDecode from "jwt-decode";
 import {
   Avatar,
   Button,
@@ -15,26 +17,27 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 export default function SignIn() {
   const [userConfirm, setUserConfirm] = useState("");
   const [password, setPassword] = useState("");
+  const [user , setUser] = useState(null);
   
   const handleSubmit = (e) => {
     e.preventDefault();
     // Add sign-in logic here
 
-    fetch(
-      `http://localhost:3000/users/login?userConfirm=${encodeURIComponent(
-        userConfirm
-      )}&password=${encodeURIComponent(password)}`,
-      {
+    fetch("http://localhost:3000/users/login",{
         method: "POST",
         headers: {
           "Content-type": "application/json",
         },
+        body: JSON.stringify({userConfirm,password}),
       }
-      
     )
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
+        const { token } = data;
+        localStorage.setItem("token",token);
+        const decoded = jwtDecode(token);
+        setUser(decoded);
       });
 
     console.log({ userConfirm, password });
