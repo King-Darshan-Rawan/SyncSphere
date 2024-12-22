@@ -1,4 +1,4 @@
-import {chat} from "../models/chat.js";
+import {Chat} from "../models/chat.js";
 
 let accessChat = async(req,res)=>{
 

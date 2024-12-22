@@ -1,6 +1,7 @@
 import { User } from "../models/user.js";
 import bcrypt from "bcrypt";
-
+// const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
 let register = async(req,res)=>{
     let {firstName, lastName , email , userName, password } = req.body;
@@ -23,17 +24,20 @@ let register = async(req,res)=>{
 }
 
 let login = async(req,res)=>{
-    let {email , password}= req.query;
-    console.log(email,password);
+    let {userConfirm , password}= req.query;
+    console.log(userConfirm,password);
   
     try{
-      let check =await User.findOne({email:email});
-      console.log(check);
+      let user =await User.find((user)=> user.userId == userConfirm || user.email == userConfirm);
+      // console.log(check);
       if(check){
-        if ( check.password == password ){
+        const isPasswordValid = await bcrypt.compare(password,user.password); 
+        if (isPasswordValid){
+          const token = jwt.sign({ username : userConfirm}, SECRET_KEY, {
+            expiresIn: "3h",
+          });
           console.log("user has loged in")
-          res.status(200).json({msg:"login successful"})
-
+          res.status(200).json({token})
         }else{
           console.log("a user has inter a incorrect password");
           res.status(400).json("incorrect password");
