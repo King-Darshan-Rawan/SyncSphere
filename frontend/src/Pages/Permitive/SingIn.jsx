@@ -29,8 +29,7 @@ export default function SignIn() {
         headers: {
           "Content-type": "application/json",
         },
-      }
-      
+      }  
     )
       .then((response) => response.json())
       .then((data) => {
