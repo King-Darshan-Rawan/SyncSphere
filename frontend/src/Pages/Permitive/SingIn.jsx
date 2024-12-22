@@ -1,26 +1,40 @@
-import React, { useState } from 'react';
-import { Avatar, Button, TextField, Link, Grid, Box, Typography, Container } from '@mui/material';
+import React, { useState } from "react";
+import {
+  Avatar,
+  Button,
+  TextField,
+  Link,
+  Grid,
+  Box,
+  Typography,
+  Container,
+} from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 export default function SignIn() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // Add sign-in logic here
 
-    fetch(`http://localhost:3000/users/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}` , {
-      method: "GET",
-      headers: {
-        'Content-type': 'application/json'
-      },
-      })
-      .then(response=>response.json())
-      .then((data)=>{
+    fetch(
+      `http://localhost:3000/users/login?email=${encodeURIComponent(
+        email
+      )}&password=${encodeURIComponent(password)}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json",
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
         console.log(data);
-      })
+      });
 
     console.log({ email, password });
   };
@@ -30,12 +44,12 @@ export default function SignIn() {
       <Box
         sx={{
           marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
-        <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+        <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
@@ -64,14 +78,17 @@ export default function SignIn() {
             autoComplete="current-password"
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-          >
-            Sign In
-          </Button>
+          <RouterLink to="/chat">
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            >
+              Sign In
+            </Button>
+          </RouterLink>
+
           <Grid container>
             <Grid item xs>
               <RouterLink to="/" variant="body2">
@@ -80,7 +97,7 @@ export default function SignIn() {
             </Grid>
             <Grid item>
               <RouterLink to="/SingUp" variant="body2">
-              <Typography variant="body2" color="primary">
+                <Typography variant="body2" color="primary">
                   {"Don't have an account? Sign Up"}
                 </Typography>
               </RouterLink>

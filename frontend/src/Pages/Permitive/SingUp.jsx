@@ -1,30 +1,39 @@
-import React, { useState } from 'react';
-import { Avatar, Button, TextField, Link, Grid, Box, Typography, Container } from '@mui/material';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import React, { useState } from "react";
+import {
+  Avatar,
+  Button,
+  TextField,
+  Link,
+  Grid,
+  Box,
+  Typography,
+  Container,
+} from "@mui/material";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 import { Link as RouterLink } from "react-router-dom";
 export default function SignUp() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // Add sign-up logic here
 
-    fetch('http://localhost:3000/users/register' , {
+    fetch("http://localhost:3000/users/register", {
       method: "POST",
       headers: {
-        'Content-type': 'application/json'
+        "Content-type": "application/json",
       },
-      body: JSON.stringify( {firstName, lastName, email, password })
-      })
-      .then(response=>response.json())
-      .then(()=>{
+      body: JSON.stringify({ firstName, lastName, email, password }),
+    })
+      .then((response) => response.json())
+      .then(() => {
         console.log("sucessful");
-      })
-        
+      });
+
     console.log({ firstName, lastName, email, password });
   };
 
@@ -33,12 +42,12 @@ export default function SignUp() {
       <Box
         sx={{
           marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
-        <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+        <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
@@ -93,14 +102,18 @@ export default function SignUp() {
               />
             </Grid>
           </Grid>
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-          >
-            Sign Up
-          </Button>
+
+          <RouterLink to="/chat">
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            >
+              Sign Up
+            </Button>
+          </RouterLink>
+
           <Grid container justifyContent="flex-end">
             <Grid item>
               <RouterLink to="/SingIn" variant="body2">

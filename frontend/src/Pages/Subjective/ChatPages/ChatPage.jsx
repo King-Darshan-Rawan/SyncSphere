@@ -1,85 +1,189 @@
 import React, { useState } from "react";
-import { Box, Typography, TextField, Button } from "@mui/material";
-import ChatList from './ChatList'; 
+import "./ChatPage.css";
+import { GoMoveToEnd } from "react-icons/go";
+import { GoMoveToStart } from "react-icons/go";
 
-const ChatPage = () => {
-  const [messages, setMessages] = useState([
-    { sender: "John Doe", text: "Hello!" },
-    { sender: "You", text: "Hi there!" },
-    { sender: "Jane Smith", text: "How are you?" },
-  ]);
-  
-  const [input, setInput] = useState("");
-  const [chats] = useState([
-    { name: "John Doe", lastMessage: "Hello!" },
-    { name: "Jane Smith", lastMessage: "How are you?" },
-    { name: "Chat Group", lastMessage: "Meeting at 5 PM" },
-  ]);
-  const [currentChat, setCurrentChat] = useState(chats[0]);
+const ChatList = ({ users, onUserClick, searchTerm, onSearchChange }) => {
+  const filteredUsers = users.filter((user) =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="chat-list">
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+        />
+      </div>
+      <div className="user-list">
+        {filteredUsers.map((user) => (
+          <div
+            key={user.id}
+            className="user-item"
+            onClick={() => onUserClick(user)}
+          >
+            <div className="user-info">
+              <img
+                src={user.profilePic}
+                alt={`${user.name}'s profile`}
+                className="user-pic"
+              />
+              <span>{user.name}</span>
+            </div>
+            <button className="video-call-btn">📹</button>
+          </div>
+        ))}
+      </div>
+      <div className="chat-list-footer">
+        <button className="join-button bottom-spc">Join Team</button>
+        <button className="create-button bottom-spc">Create Team</button>
+      </div>
+    </div>
+  );
+};
+
+const ChatSection = ({
+  selectedUser,
+  chatMessages,
+  onSendMessage,
+  onVoiceMessage,
+}) => {
+  const [messageText, setMessageText] = useState("");
 
   const handleSend = () => {
-    if (input.trim() !== "") {
-      setMessages([...messages, { sender: "You", text: input }]);
-      setInput("");
+    if (messageText.trim()) {
+      onSendMessage(messageText);
+      setMessageText("");
     }
   };
 
-  const handleSelectChat = (chat) => {
-    setCurrentChat(chat);
-    setMessages([{ sender: chat.name, text: chat.lastMessage }]);
+  return (
+    <div className="chat-section">
+      {selectedUser ? (
+        <>
+          <div className="chat-header">{selectedUser.name}</div>
+          <div className="chat-messages">
+            {chatMessages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`chat-message ${
+                  msg.sender === "me" ? "sent" : "received"
+                }`}
+              >
+                {msg.text}
+              </div>
+            ))}
+          </div>
+          <div className="chat-input">
+            <textarea
+              placeholder="Type a message..."
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+            ></textarea>
+            <button
+              className="record-button"
+              onClick={() => onVoiceMessage("Voice message attached!")}
+            >
+              🎤
+            </button>
+            <button className="send-button" onClick={handleSend}>
+              Send
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="no-chat">Select a user to start chatting</div>
+      )}
+    </div>
+  );
+};
+
+const TaskTeam = () => {
+  const [sidebar, setSidebar] = useState(true);
+  const [isActive, setIsActive] = useState(true); // State for dynamic class
+
+  const toggleSidebar = () => {
+    setSidebar(!sidebar);
+    setIsActive(!isActive); // Toggle the active class state
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, height: "100vh" }}>
-      {/* Sidebar - Chat List */}
-      <ChatList chats={chats} onSelectChat={handleSelectChat} />
+    <>
+      <div className="chatmain-container">
+        <div className="hider-container">
+          <button onClick={toggleSidebar} className={`hider ${sidebar ? "sidebar-open" : "sidebar-closed"}`}>
+            {sidebar ? <GoMoveToEnd /> : <GoMoveToStart />}
+          </button>
+        </div>
 
-      {/* Main Chat Window */}
-      <Box
-        sx={{
-          flexGrow: 1,
-          p: 2,
-          display: "flex",
-          flexDirection: "column",
-          height: { xs: "auto", sm: "100vh" },  // Responsive height
-        }}
-      >
-        <Typography variant="h6">{currentChat.name}</Typography>
-        <Box sx={{ flexGrow: 1, overflowY: "auto", mb: 2 }}>
-          {messages.map((message, index) => (
-            <Typography
-              key={index}
-              align={message.sender === "You" ? "right" : "left"}
-              sx={{
-                p: 1,
-                backgroundColor: message.sender === "You" ? "#d1ffd1" : "#e0e0e0",
-                borderRadius: "5px",
-                mb: 1,
-                maxWidth: "70%",
-                alignSelf: message.sender === "You" ? "flex-end" : "flex-start",
-              }}
-            >
-              {message.sender}: {message.text}
-            </Typography>
-          ))}
-        </Box>
+        <div className={`task-team ${isActive ? "active-sidebar" : "inactive-sidebar"}`}>
+          <div className="team">
+            <div className="task-top">
+              <button className="join-button">Join Meet</button>
+              <button className="create-button">Create Meet</button>
+            </div>
+            <div className="head">
+              {" "}
+              <p className="titel-sub-cont"> Team</p>
+            </div>
+          </div>
+          <div className="task">
+            <div className="head">
+              {" "}
+              <p className="titel-sub-cont"> Task</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
 
-        {/* Message Input */}
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <TextField
-            variant="outlined"
-            placeholder="Type a message"
-            fullWidth
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            sx={{ mr: 2 }}
-          />
-          <Button variant="contained" color="primary" onClick={handleSend}>
-            Send
-          </Button>
-        </Box>
-      </Box>
-    </Box>
+const ChatPage = () => {
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [chatMessages, setChatMessages] = useState([]);
+
+  const users = [
+    { id: 1, name: "JohnDoe", profilePic: "https://via.placeholder.com/50" },
+    { id: 2, name: "JaneSmith", profilePic: "https://via.placeholder.com/50" },
+    { id: 3, name: "User123", profilePic: "https://via.placeholder.com/50" },
+  ];
+
+  const handleUserClick = (user) => {
+    setSelectedUser(user);
+    setChatMessages([
+      { id: 1, text: `Hi, ${user.name}!`, sender: "them" },
+      { id: 2, text: "Hello!", sender: "me" },
+    ]);
+  };
+
+  const handleSendMessage = (text) => {
+    setChatMessages([
+      ...chatMessages,
+      { id: chatMessages.length + 1, text, sender: "me" },
+    ]);
+  };
+
+  return (
+    <div className="chat-page">
+      <ChatList
+        users={users}
+        onUserClick={handleUserClick}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+      />
+      <ChatSection
+        selectedUser={selectedUser}
+        chatMessages={chatMessages}
+        onSendMessage={handleSendMessage}
+        onVoiceMessage={(msg) => console.log(msg)}
+      />
+      <TaskTeam />
+    </div>
   );
 };
 

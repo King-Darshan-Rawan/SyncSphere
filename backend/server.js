@@ -1,61 +1,79 @@
 import 'dotenv/config';
-
 import mongoose from 'mongoose';
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
+import { createServer } from "http";
+import { Server } from "socket.io";
 
-// const DB_URL = process.env.MONGO_ATLAS_WEB;
-// console.log(DB_URL);
+// Database URL (move to .env file for security)
+const DB_URL = process.env.MONGO_ATLAS_WEB || "mongodb+srv://aniketdekate1:AniketDarshanWebProject@cluster0.bd4kn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-const DB_URL = "mongodb+srv://aniketdekate1:AniketDarshanWebProject@cluster0.bd4kn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-
+// Initialize app and server
 const app = express();
-const port = 3000;
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
 
-
-
-
-import userRouter from "./routes/user.js"
-import workspaceRouter from "./routes/workspace.js"
-
-
-
+// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
+// Routers
+import userRouter from "./routes/user.js";
+import workspaceRouter from "./routes/workspace.js";
+app.use("/users", userRouter);
+app.use("/workspace", workspaceRouter);
 
+// Connect to MongoDB
 async function main() {
-  
-  try{
+  try {
     await mongoose.connect(DB_URL);
+    console.log("Connected to database");
+  } catch (err) {
+    console.error("Database connection failed", err);
   }
-  catch(err){
-    console.error("not defined",err)
-  }
-  
-};
+}
+main();
 
-
-main().then(()=>{
-  console.log("connected to dataBase");
-}).catch((err) =>{
-  console.log(err);
+// Root endpoint
+app.get("/", (req, res) => {
+  res.send("Server is running");
 });
 
+// Socket.IO functionality
+let chats = {}; // In-memory storage for chats
 
+io.on("connection", (socket) => {
+  console.log(`User connected: ${socket.id}`);
 
-app.get("/",(req,res)=>{
-  res.send("reached");
-})
+  // Join a room
+  socket.on("joinRoom", (roomId) => {
+    socket.join(roomId);
+    console.log(`User ${socket.id} joined room ${roomId}`);
+  });
 
+  // Handle sending messages
+  socket.on("sendMessage", ({ roomId, sender, text }) => {
+    const message = { sender, text, timestamp: new Date() };
+    if (!chats[roomId]) chats[roomId] = [];
+    chats[roomId].push(message);
 
-app.use("/users" , userRouter);
-app.use("/workspace" , workspaceRouter);
+    // Emit message to everyone in the room
+    io.to(roomId).emit("receiveMessage", message);
+  });
 
+  // Disconnect
+  socket.on("disconnect", () => {
+    console.log(`User disconnected: ${socket.id}`);
+  });
+});
 
-app.listen(port, function () {
-    console.log(` web server listening on port ${port}`)
-    
-  })
-
+// Start the server
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Web server listening on port ${PORT}`);
+});
