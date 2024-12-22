@@ -2,16 +2,9 @@ import { User } from "../models/user.js";
 
 
 let register = async(req,res)=>{
-// <<<<<<< HEAD
-//   console.log("1--------------------------------------------");
-//     let {firstName, lastName , email , password} = req.body;
-//     const username = firstName + " " + lastName;
-//     console.log("2-----------------------")
-//     console.log({username , email  ,password});
-// =======
-//     // console.log("on")
-//     let {username , email , password} = req.body;
-// >>>>>>> 91413db3c8f18f5cd19e9776be51d91b1c6c87f0
+    let {firstName, lastName , email , password} = req.body;
+    const username = firstName + " " + lastName;
+
     try{
         let check = await User.findOne({username:username});
         if(check){
