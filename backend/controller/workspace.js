@@ -62,4 +62,4 @@ let joinWorkSpace = async (req, res) => {
   };
   
 
-export {Createworkspace}
+export {Createworkspace , joinWorkSpace}
