@@ -28,7 +28,7 @@ export default function SignUp() {
       headers: {
         "Content-type": "application/json",
       },
-      body: JSON.stringify({ firstName, lastName, email, password }),
+      body: JSON.stringify({ firstName, lastName, email,userName, password }),
     })
       .then((response) => response.json())
       .then(() => {
