@@ -3,20 +3,19 @@ import bcrypt from "bcrypt";
 // const jwt = require("jsonwebtoken");
 import jwt from "jsonwebtoken";
 
+const SECRET_KEY = "adsasd";
 let register = async(req,res)=>{
     let {firstName, lastName , email , userName, password } = req.body;
     const fullname = firstName + " " + lastName;
 
     try{
-
-        let check = await User.find((user)=> user.userId == userName || user.email == userName);
-
+        let check = await User.findOne({userId:userName});
         if(check){
             res.status(400).json({msg:"This username already exist"});
         }else{
             const hashpass = await bcrypt.hash(password, 10);
-            const insert_data = await User.insertMany({username:username , email:email , password:hashpass , userId:userName});
-            res.status(200).json({msg:"User registered" , _id:insert_data[0]._id,username,email});
+            const insert_data = await User.insertMany({username:fullname , email:email , password:hashpass , userId:userName});
+            res.status(200).json({msg:"User registered" , _id:insert_data[0]._id,userName,email});
         }
     }catch(err){
         res.status(400).json(err);
@@ -24,15 +23,18 @@ let register = async(req,res)=>{
 }
 
 let login = async(req,res)=>{
-    let {userConfirm , password}= req.query;
+    let {userConfirm , password}= req.body;
     console.log(userConfirm,password);
   
     try{
-      let user =await User.find((user)=> user.userId == userConfirm || user.email == userConfirm);
-      // console.log(check);
-      if(check){
+      const user = await User.findOne({
+        $or: [{ userId: userConfirm }, { email: userConfirm }],
+      });
+      if(user){
         const isPasswordValid = await bcrypt.compare(password,user.password); 
+        console.log(isPasswordValid);
         if (isPasswordValid){
+          console.log("1");
           const token = jwt.sign({ username : userConfirm}, SECRET_KEY, {
             expiresIn: "3h",
           });
