@@ -6,7 +6,7 @@ router.route("/register")
 .post(register)
 
 router.route("/login")
-.get(login)
+.post(login)
 
 
 
