@@ -16,14 +16,10 @@
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@heroicons/react": "^2.1.5",
-<<<<<<< HEAD
     "@mui/icons-material": "^6.2.1",
-    "@mui/material": "^6.2.1",
-=======
-    "@mui/icons-material": "^6.1.1",
     "@mui/material": "^6.1.1",
     "axios": "^1.7.9",
->>>>>>> 4f80386b08c4a8557ef16a18fa3b4fecabee7f3c
+
     "clsx": "^2.1.1",
     "framer-motion": "^11.9.0",
     "jwt-decode": "^4.0.0",
