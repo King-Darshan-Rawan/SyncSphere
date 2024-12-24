@@ -74,6 +74,28 @@ const login = async (req, res) => {
   }
 };
 
+const search = async(req,res) =>{
+  try {
+    const { search } = req.query;
+    const limit = 10;
+    console.log(search);
+
+    if (!search) {
+      return res.status(400).json({ message: "Search string is required" });
+    }
+    console.log("2");
+    const users = await User.find({ userId: { $regex: `^${search}`, $options: "i" } })
+      .limit(limit)
+      .select("userId");
+    console.log(users);
+    console.log("3");
+
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+}
 
 
-export {register,login}
+
+export {register,login,search}
