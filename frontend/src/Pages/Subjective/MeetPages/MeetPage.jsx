@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { AppBar, Toolbar, Typography, IconButton, Box, Button } from "@mui/material";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import VideocamOffIcon from "@mui/icons-material/VideocamOff";
@@ -8,20 +8,55 @@ import CloseIcon from "@mui/icons-material/Close";
 import NoteIcon from "@mui/icons-material/Note";
 import GroupIcon from "@mui/icons-material/Group";
 import ScreenShareIcon from "@mui/icons-material/ScreenShare";
-import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import CallEndIcon from "@mui/icons-material/CallEnd";
 import SpeechToText from "./SpeechToText";
+import Webcam from "react-webcam"; // Webcam library
 
 const MeetPage = () => {
   const [attendeesVisible, setAttendeesVisible] = useState(true);
   const [notesVisible, setNotesVisible] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
   const [isVideoOn, setIsVideoOn] = useState(true);
+  const [speechOutput, setSpeechOutput] = useState(""); // To store speech-to-text output
+  const webcamRef = useRef(null);
 
+  // Toggle microphone
   const toggleMic = () => setIsMicOn(!isMicOn);
+
+  // Toggle video
   const toggleVideo = () => setIsVideoOn(!isVideoOn);
+
+  // Toggle attendees sidebar
   const toggleAttendees = () => setAttendeesVisible(!attendeesVisible);
+
+  // Toggle notes sidebar
   const toggleNotes = () => setNotesVisible(!notesVisible);
+
+  // Speech-to-text using Web Speech API
+  const startSpeechToText = () => {
+    if (!("webkitSpeechRecognition" in window)) {
+      alert("Speech recognition not supported in this browser.");
+      return;
+    }
+
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = true;
+
+    recognition.onresult = (event) => {
+      let transcript = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setSpeechOutput(transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+    };
+
+    recognition.start();
+  };
 
   return (
     <div>
@@ -52,7 +87,7 @@ const MeetPage = () => {
           </Box>
         )}
 
-        {/* Center - Presentation View */}
+        {/* Center - Video Feed */}
         <Box
           sx={{
             flex: 1,
@@ -61,9 +96,23 @@ const MeetPage = () => {
             justifyContent: "center",
             backgroundColor: "#e0e0e0",
             border: "2px solid purple",
+            position: "relative",
           }}
         >
-          <Typography variant="h4">Presentation View</Typography>
+          {isVideoOn ? (
+            <Webcam
+              audio={false}
+              ref={webcamRef}
+              style={{
+                width: "80%",
+                height: "auto",
+                borderRadius: "10px",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+              }}
+            />
+          ) : (
+            <Typography variant="h4">Camera Off</Typography>
+          )}
         </Box>
 
         {/* Notes Sidebar */}
@@ -75,8 +124,15 @@ const MeetPage = () => {
                 <CloseIcon />
               </IconButton>
             </Box>
-            <Box sx={{ height: "70%", overflowY: "scroll", border: "1px solid #ccc", padding: 1 }}>
-              <SpeechToText />
+            <Box
+              sx={{
+                height: "70%",
+                overflowY: "scroll",
+                border: "1px solid #ccc",
+                padding: 1,
+              }}
+            >
+              <Typography variant="body1">{speechOutput || "[Speech-to-text output here]"}</Typography>
             </Box>
           </Box>
         )}
@@ -98,12 +154,9 @@ const MeetPage = () => {
         <IconButton color={isVideoOn ? "primary" : "secondary"} onClick={toggleVideo}>
           {isVideoOn ? <VideocamIcon /> : <VideocamOffIcon />}
         </IconButton>
-        <IconButton color="primary">
-          <EmojiEmotionsIcon />
-        </IconButton>
-        <IconButton color="primary">
-          <ScreenShareIcon />
-        </IconButton>
+        <Button variant="contained" color="primary" onClick={startSpeechToText}>
+          Start Speech-to-Text
+        </Button>
         <IconButton color="primary" onClick={toggleNotes}>
           <NoteIcon />
         </IconButton>

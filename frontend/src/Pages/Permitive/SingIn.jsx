@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import jwtDecode from "jwt-decode";
+// import { decode as jwtDecode } from "jwt-decode";
 import {
   Avatar,
   Button,
@@ -10,38 +10,58 @@ import {
   Box,
   Typography,
   Container,
+  Alert,
 } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 export default function SignIn() {
   const [userConfirm, setUserConfirm] = useState("");
   const [password, setPassword] = useState("");
-  const [user , setUser] = useState(null);
-  
-  const handleSubmit = (e) => {
+  const [error, setError] = useState(null);
+  const navigate = useNavigate(); // For navigation
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add sign-in logic here
-
-    fetch("http://localhost:3000/users/login",{
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({userConfirm,password}),
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        const { token } = data;
-        localStorage.setItem("token",token);
-        const decoded = jwtDecode(token);
-        setUser(decoded);
+  
+    try {
+      // Make API call to login
+      const response = await axios.post("http://localhost:3000/users/login", {
+        userConfirm,
+        password,
       });
-
-    console.log({ userConfirm, password });
+  
+      // Extract token from response
+      const { token } = response.data;
+  
+      if (!token) {
+        throw new Error("No token received. Please try again.");
+      }
+  
+      // Store token in localStorage
+      localStorage.setItem("token", token);
+  
+      // Decode token to get user info (if needed)
+      // Uncomment the next lines if you need user info from the token
+      // const decoded = jwtDecode(token);
+      // console.log("User decoded from token:", decoded);
+  
+      // Navigate to chat page after successful login
+      navigate("/chat");
+    } catch (err) {
+      if (err.response) {
+        // Backend error
+        const { error, message } = err.response.data;
+        console.error(`Login failed: ${error} - ${message}`);
+        setError(message || "An error occurred during login.");
+      } else {
+        // Network or other error
+        console.error("Network or server error", err);
+        setError("Unable to connect to the server. Please try again later.");
+      }
+    }
   };
+  
 
   return (
     <Container component="main" maxWidth="xs">
@@ -59,6 +79,7 @@ export default function SignIn() {
         <Typography component="h1" variant="h5">
           Sign In
         </Typography>
+        {error && <Alert severity="error">{error}</Alert>} {/* Error message */}
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
           <TextField
             margin="normal"
@@ -82,16 +103,15 @@ export default function SignIn() {
             autoComplete="current-password"
             onChange={(e) => setPassword(e.target.value)}
           />
-          <RouterLink to="/chat">
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-            >
-              Sign In
-            </Button>
-          </RouterLink>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+            onClick={handleSubmit}
+          >
+            Sign In
+          </Button>
 
           <Grid container>
             <Grid item xs>
