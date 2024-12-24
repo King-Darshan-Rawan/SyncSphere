@@ -1,6 +1,6 @@
 import {Chat} from "../models/chat.js";
 
-// create one on one chat
+// create one on one chat if previous does not exist
 let accessChat = async(req,res)=>{
     let {loggedInUserId , userId} = req.body;
     console.log(loggedInUserId , userId);
@@ -22,7 +22,7 @@ let accessChat = async(req,res)=>{
         res.status(400).json({msg:"error accessing Chat"});
     }
 }
-
+// check for previous chat
 let fetchChat = async(req,res)=>{
     let {loggedInUserId} = req.headers;
     try {
@@ -34,7 +34,7 @@ let fetchChat = async(req,res)=>{
         res.status(500).json({ error: "Error fetching chats" });
       }
 }
-
+//create group chat
 let createGroupChat = async(req,res)=>{
     let {groupName , users} = req.body;
     let {loggedInUserId} = req.headers;
@@ -51,7 +51,7 @@ let createGroupChat = async(req,res)=>{
         res.status(400).json({msg:"error in creating Group chat"});
     }
 }
-
+//rename a group
 let renameGroup = async(req,res)=>{
     let {chatId , chatName} = req.body;
     try{
@@ -62,7 +62,7 @@ let renameGroup = async(req,res)=>{
 
     } 
 }
-
+//remove from group
 let removeFromGroup = async(req,res)=>{
     let {chatId , userToBeremoved} = req.body;
     try{
@@ -77,7 +77,7 @@ let removeFromGroup = async(req,res)=>{
 
     } 
 }
-
+//add to group
 let addtoGroup = async(req,res)=>{
     let {chatId , newUser} = req.body;
     try{
