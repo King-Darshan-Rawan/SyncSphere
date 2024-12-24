@@ -2,22 +2,22 @@ import {accessChat , fetchChat , createGroupChat , renameGroup , removeFromGroup
 import express from "express";
 const router = express.Router();
 
-router.route("/")
+router.route("/accessChat")
 .post(accessChat)
 
-router.route("/a")
+router.route("/fetchChat")
 .get(fetchChat)
 
 router.route("/createGroupChat")
 .post(createGroupChat)
 
 router.route("/renameGroup")
-.get(renameGroup)
+.put(renameGroup)
 
 router.route("/removeFromGroup")
-.post(removeFromGroup)
+.put(removeFromGroup)
 
 router.route("/addtoGroup")
-.get(addtoGroup)
+.put(addtoGroup)
 
 export default router;
