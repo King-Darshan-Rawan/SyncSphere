@@ -3,20 +3,20 @@ import {Chat} from "../models/chat.js";
 // create one on one chat
 let accessChat = async(req,res)=>{
     let {loggedInUserId , userId} = req.body;
-    console.log(loggedInUserId , userId);
 
     try{
-        console.log("");
         let chat = await Chat.findOne({
             isGroupChat: false,
             users: { $all: [userId, loggedInUserId] },
         }).populate("users", "username");
 
         if(!chat){
-            const Chat = await Chat.insertMany({
+            console.log("3");
+            let chat = await Chat.create({
                 chatName: "One-on-One Chat",
-                user:[userId,loggedInUserId]});
-        }
+                users:[userId,loggedInUserId]
+            });
+            }
         res.status(200).json(chat);
     }catch(err){
         res.status(400).json({msg:"error accessing Chat"});
@@ -24,11 +24,12 @@ let accessChat = async(req,res)=>{
 }
 
 let fetchChat = async(req,res)=>{
-    let {loggedInUserId} = req.headers;
+    // let {loggedInUserId} = req.headers;
+    let {loggedInUserId} = req.body;
     try {
         const chats = await Chat.find({ users: { $in: [loggedInUserId] } })
           .populate("users", "username")
-          .populate("groupAdmin", "username");
+        //   .populate("groupAdmin", "username");
         res.status(200).json(chats);
       }catch (error) {
         res.status(500).json({ error: "Error fetching chats" });
@@ -37,8 +38,8 @@ let fetchChat = async(req,res)=>{
 
 let createGroupChat = async(req,res)=>{
     let {groupName , users} = req.body;
-    let {loggedInUserId} = req.headers;
-
+    // let {loggedInUserId} = req.headers;
+    let {loggedInUserId} = req.body;
     try{
         const groupChat = await Chat.create({
             chatName: groupName,
