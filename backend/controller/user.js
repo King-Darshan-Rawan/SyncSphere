@@ -22,33 +22,58 @@ let register = async(req,res)=>{
     }
 }
 
-let login = async(req,res)=>{
-    let {userConfirm , password}= req.body;
-    try{
-      const user = await User.findOne({
-        $or: [{ userId: userConfirm }, { email: userConfirm }],
+const login = async (req, res) => {
+  const { userConfirm, password } = req.body;
+
+  // Check if required fields are missing
+  if (!userConfirm || !password) {
+    return res.status(400).json({
+      error: "MISSING_FIELDS",
+      message: "Email/Username and password are required.",
+    });
+  }
+
+  try {
+    // Find user by username or email
+    const user = await User.findOne({
+      $or: [{ userId: userConfirm }, { email: userConfirm }],
+    });
+
+    if (!user) {
+      console.log("No user exists with this email or username");
+      return res.status(400).json({
+        error: "USER_NOT_FOUND",
+        message: "No user exists with this email or username.",
       });
-      if(user){
-        const isPasswordValid = await bcrypt.compare(password,user.password); 
-        if (isPasswordValid){
-          console.log("1");
-          const token = jwt.sign({ username : userConfirm}, SECRET_KEY, {
-            expiresIn: "3h",
-          });
-          console.log("user has loged in")
-          res.status(200).json({token})
-        }else{
-          console.log("a user has inter a incorrect password");
-          res.status(400).json("incorrect password");
-        }
-      }
-      else{
-        res.status(400).json("no user Exist with this email");
-      }
-    }catch(err){
-      res.status(500).json(err)
     }
-  } 
+
+    // Compare the provided password with the stored hashed password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      console.log("A user entered an incorrect password");
+      return res.status(400).json({
+        error: "INVALID_PASSWORD",
+        message: "Incorrect password.",
+      });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign({ username: userConfirm }, SECRET_KEY, {
+      expiresIn: "3h",
+    });
+
+    console.log("User has logged in successfully");
+    return res.status(200).json({ token });
+  } catch (err) {
+    console.error("Server error during login:", err);
+    return res.status(500).json({
+      error: "SERVER_ERROR",
+      message: "Something went wrong. Please try again later.",
+    });
+  }
+};
+
 
 
 export {register,login}
