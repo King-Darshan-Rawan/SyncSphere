@@ -3,12 +3,34 @@ import "./ChatPage.css";
 import { GoMoveToEnd } from "react-icons/go";
 import { GoMoveToStart } from "react-icons/go";
 import { FaMicrophoneAlt } from "react-icons/fa";
-
+import {
+  accessChat,
+  fetchChat,
+  createGroupChat,
+  renameGroup,
+  removeFromGroup,
+  addtoGroup,
+} from "../../../../../backend/controller/chat";
+//FetchChat = chatlist
 //left segment
 const ChatList = ({ users, onUserClick, searchTerm, onSearchChange }) => {
   const filteredUsers = users.filter((user) =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  let chatfinder = () => {
+    // Example Express route to fetch users
+    app.get("/api/users", async (req, res) => {
+      try {
+        const { searchTerm } = req.query;
+        const users = await User.find({
+        userId: { $regex: searchTerm, $options: "i" }, // Case-insensitive search
+        });
+        res.json(users);
+      } catch (err) {
+        res.status(500).json({ msg: "Error fetching users" });
+      }
+    });
+  };
 
   return (
     <div className="chat-list">
@@ -17,7 +39,9 @@ const ChatList = ({ users, onUserClick, searchTerm, onSearchChange }) => {
           type="text"
           placeholder="Search..."
           value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
+          onChange={(e) => {
+            onSearchChange(e.target.value) || chatfinder(e.target.value);
+          }}
         />
       </div>
       <div className="user-list">
@@ -116,12 +140,19 @@ const TaskTeam = () => {
     <>
       <div className="chatmain-container">
         <div className="hider-container">
-          <button onClick={toggleSidebar} className={`hider ${sidebar ? "sidebar-open" : "sidebar-closed"}`}>
+          <button
+            onClick={toggleSidebar}
+            className={`hider ${sidebar ? "sidebar-open" : "sidebar-closed"}`}
+          >
             {sidebar ? <GoMoveToEnd /> : <GoMoveToStart />}
           </button>
         </div>
 
-        <div className={`task-team ${isActive ? "active-sidebar" : "inactive-sidebar"}`}>
+        <div
+          className={`task-team ${
+            isActive ? "active-sidebar" : "inactive-sidebar"
+          }`}
+        >
           <div className="team">
             <div className="task-top">
               <button className="join-button">Join Meet</button>
@@ -143,11 +174,12 @@ const TaskTeam = () => {
     </>
   );
 };
-//center 
+//center
 const ChatPage = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
+  const [chat, setChat] = useState(null); // Store chat object here
 
   const users = [
     { id: 1, name: "JohnDoe", profilePic: "https://via.placeholder.com/50" },
@@ -155,12 +187,27 @@ const ChatPage = () => {
     { id: 3, name: "User123", profilePic: "https://via.placeholder.com/50" },
   ];
 
-  const handleUserClick = (user) => {
+  // Function to fetch or create a chat when a user is selected
+  const handleUserClick = async (user) => {
     setSelectedUser(user);
-    setChatMessages([
-      { id: 1, text: `Hi, ${user.name}!`, sender: "them" },
-      { id: 2, text: "Hello!", sender: "me" },
-    ]);
+
+    try {
+      // Replace 'loggedInUserId' with the actual logged-in user's ID (you should have this stored)
+      const loggedInUserId = "currentLoggedInUserId"; // Example placeholder, change accordingly
+      const response = await axios.post("/api/chat/accessChat", {
+        loggedInUserId,
+        userId: user.id,
+      });
+
+      const chatData = response.data; // The chat data returned from the backend
+      setChat(chatData); // Update the chat state with the new chat
+      setChatMessages([
+        { id: 1, text: `Hi, ${user.name}!`, sender: "them" },
+        { id: 2, text: "Hello!", sender: "me" },
+      ]);
+    } catch (error) {
+      console.error("Error accessing or creating chat:", error);
+    }
   };
 
   const handleSendMessage = (text) => {

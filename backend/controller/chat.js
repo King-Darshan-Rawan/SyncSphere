@@ -1,27 +1,33 @@
 import {Chat} from "../models/chat.js";
 
 // create one on one chat if previous does not exist
-let accessChat = async(req,res)=>{
-    let {loggedInUserId , userId} = req.body;
-
-    try{
-        let chat = await Chat.findOne({
-            isGroupChat: false,
-            users: { $all: [userId, loggedInUserId] },
-        }).populate("users", "username");
-
-        if(!chat){
-            console.log("3");
-            let chat = await Chat.create({
-                chatName: "One-on-One Chat",
-                users:[userId,loggedInUserId]
-            });
-            }
-        res.status(200).json(chat);
-    }catch(err){
-        res.status(400).json({msg:"error accessing Chat"});
+let accessChat = async (req, res) => {
+    let { loggedInUserId, userId } = req.body;
+  
+    try {
+      // Find the existing chat
+      let chat = await Chat.findOne({
+        isGroupChat: false,
+        users: { $all: [userId, loggedInUserId] },
+      }).populate("users", "username");
+  
+      // If chat doesn't exist, create a new one
+      if (!chat) {
+        chat = await Chat.create({
+          chatName: "One-on-One Chat",
+          users: [userId, loggedInUserId]
+        });
+        // Populate the newly created chat with user information
+        chat = await chat.populate("users", "username").execPopulate();
+      }
+  
+      // Return the chat, whether it's newly created or found
+      res.status(200).json(chat);
+    } catch (err) {
+      res.status(400).json({ msg: "Error accessing chat" });
     }
-}
+  };
+  
 // check for previous chat
 let fetchChat = async(req,res)=>{
     // let {loggedInUserId} = req.headers;
