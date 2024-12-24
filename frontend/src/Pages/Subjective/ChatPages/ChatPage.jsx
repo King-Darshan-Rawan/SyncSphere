@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./ChatPage.css";
 import { GoMoveToEnd } from "react-icons/go";
 import { GoMoveToStart } from "react-icons/go";
 import { FaMicrophoneAlt } from "react-icons/fa";
+
 import {
   accessChat,
   fetchChat,
@@ -14,23 +15,28 @@ import {
 //FetchChat = chatlist
 //left segment
 const ChatList = ({ users, onUserClick, searchTerm, onSearchChange }) => {
-  const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  let chatfinder = () => {
-    // Example Express route to fetch users
-    app.get("/api/users", async (req, res) => {
-      try {
-        const { searchTerm } = req.query;
-        const users = await User.find({
-        userId: { $regex: searchTerm, $options: "i" }, // Case-insensitive search
-        });
-        res.json(users);
-      } catch (err) {
-        res.status(500).json({ msg: "Error fetching users" });
-      }
-    });
+  const [filteredUsers, setFilteredUsers] = useState(users);
+
+  // API call to fetch users based on search term
+  const searchUsers = async (searchQuery) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/users/search?search=${searchQuery}`
+      );
+      setFilteredUsers(response.data); // Set the filtered users based on the search result
+    } catch (error) {
+      console.error("Error fetching users: ", error);
+    }
   };
+
+  // Handle search term change
+  useEffect(() => {
+    if (searchTerm) {
+      searchUsers(searchTerm); // Search for users when the search term changes
+    } else {
+      setFilteredUsers(users); // Show all users if there's no search term
+    }
+  }, [searchTerm, users]);
 
   return (
     <div className="chat-list">
@@ -40,7 +46,7 @@ const ChatList = ({ users, onUserClick, searchTerm, onSearchChange }) => {
           placeholder="Search..."
           value={searchTerm}
           onChange={(e) => {
-            onSearchChange(e.target.value) || chatfinder(e.target.value);
+            onSearchChange(e.target.value); // Update search term
           }}
         />
       </div>
@@ -70,6 +76,7 @@ const ChatList = ({ users, onUserClick, searchTerm, onSearchChange }) => {
     </div>
   );
 };
+
 //right top
 const ChatSection = ({
   selectedUser,
