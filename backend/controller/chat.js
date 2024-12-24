@@ -3,31 +3,6 @@ import {Chat} from "../models/chat.js";
 
 // create one on one chat
 let accessChat = async(req,res)=>{
-<<<<<<< HEAD
-//one to one chat 
-//creator id
-// second person id
-}
-
-let fetchChat = async(req,res)=>{
-    // if previous chat exist 
-}
-
-let createGroupChat = async(req,res)=>{
-    // create group
-}
-
-let renameGroup = async(req,res)=>{
-    //rename group
-}
-
-let removeFromGroup = async(req,res)=>{
-    //remove
-}
-
-let addtoGroup = async(req,res)=>{
-    //add
-=======
     let {loggedInUserId , userId} = req.body;
 
     try{
@@ -116,7 +91,6 @@ let addtoGroup = async(req,res)=>{
         res.status(400).json({msg:"error adding a user in group"});
 
     } 
->>>>>>> bde9a32fd85f34de1f34f664e86c89cff8d5a4fa
 }
 
 export {accessChat,fetchChat,createGroupChat,renameGroup,removeFromGroup,addtoGroup};
