@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import "./ChatPage.css";
 import { GoMoveToEnd } from "react-icons/go";
 import { GoMoveToStart } from "react-icons/go";
+import { FaMicrophoneAlt } from "react-icons/fa";
 
+//left segment
 const ChatList = ({ users, onUserClick, searchTerm, onSearchChange }) => {
   const filteredUsers = users.filter((user) =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -44,7 +46,7 @@ const ChatList = ({ users, onUserClick, searchTerm, onSearchChange }) => {
     </div>
   );
 };
-
+//right top
 const ChatSection = ({
   selectedUser,
   chatMessages,
@@ -87,7 +89,7 @@ const ChatSection = ({
               className="record-button"
               onClick={() => onVoiceMessage("Voice message attached!")}
             >
-              🎤
+              <FaMicrophoneAlt />
             </button>
             <button className="send-button" onClick={handleSend}>
               Send
@@ -100,7 +102,7 @@ const ChatSection = ({
     </div>
   );
 };
-
+//right bottom
 const TaskTeam = () => {
   const [sidebar, setSidebar] = useState(true);
   const [isActive, setIsActive] = useState(true); // State for dynamic class
@@ -141,7 +143,7 @@ const TaskTeam = () => {
     </>
   );
 };
-
+//center 
 const ChatPage = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
