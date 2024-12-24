@@ -42,7 +42,8 @@ let createGroupChat = async(req,res)=>{
     let {loggedInUserId} = req.body;
     try{
         const groupChat = await Chat.create({
-            chatName: groupName,
+            chatName: "Group Chat",
+            groupName: groupName,
             isGroupChat: true,
             users: [...users, loggedInUserId],
             groupAdmin: loggedInUserId,
@@ -56,7 +57,7 @@ let createGroupChat = async(req,res)=>{
 let renameGroup = async(req,res)=>{
     let {chatId , chatName} = req.body;
     try{
-        const chat = await Chat.findByIdAndUpdate(chatId, { chatName:  chatName}, { new: true });
+        const chat = await Chat.findByIdAndUpdate(chatId, { groupName:  chatName}, { new: true });
         res.status(200).json(chat);
     }catch(error){
         res.status(400).json({msg:"error in renaming"});
@@ -66,12 +67,17 @@ let renameGroup = async(req,res)=>{
 //remove from group
 let removeFromGroup = async(req,res)=>{
     let {chatId , userToBeremoved} = req.body;
+    console.log(chatId , userToBeremoved);
     try{
+        console.log("1");
         const chat = await Chat.findByIdAndUpdate(
-            chatId,
+            { _id: chatId },
             { $pull: { users: userToBeremoved } },
             { new: true }
-          ).populate("users", "username");
+          );
+        //   .populate("users", "username");
+        console.log("2");
+        console.log(chat);
         res.status(200).json(chat);
     }catch(error){
         res.status(400).json({msg:"error in removing a user"});
@@ -83,7 +89,7 @@ let addtoGroup = async(req,res)=>{
     let {chatId , newUser} = req.body;
     try{
         const chat = await Chat.findByIdAndUpdate(
-            chatId,
+            { _id: chatId },
             { $push: { users: newUser } },
             { new: true }
           ).populate("users", "username");
