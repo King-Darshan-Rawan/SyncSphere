@@ -11,32 +11,42 @@ import {
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
-import { Link as RouterLink } from "react-router-dom";
+import { Navigate, Link as RouterLink, useNavigate } from "react-router-dom";
 export default function SignUp() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
-
+  const navigate = useNavigate();
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add sign-up logic here
-
+  
     fetch("http://localhost:3000/users/register", {
       method: "POST",
       headers: {
         "Content-type": "application/json",
       },
-      body: JSON.stringify({ firstName, lastName, email,userName, password }),
+      body: JSON.stringify({ firstName, lastName, email, userName, password }),
     })
-      .then((response) => response.json())
-      .then(() => {
-        console.log("sucessful");
+      .then((response) => {
+        if (!response.ok) {
+          // Throw an error if the response status is not OK
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("SignUp successful", data);
+        // Optionally redirect or notify the user
+        navigate("/chat");
+      })
+      .catch((error) => {
+        console.error("Error during SignUp:", error);
+        alert("Failed to sign up. Please try again.");
       });
-
-    console.log({ firstName, lastName, email, password });
   };
+  
 
   return (
     <Container component="main" maxWidth="xs">
@@ -114,16 +124,17 @@ export default function SignUp() {
             </Grid>
           </Grid>
 
-          <RouterLink to="/chat">
+          
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              onClick={handleSubmit}
             >
               Sign Up
             </Button>
-          </RouterLink>
+          
 
           <Grid container justifyContent="flex-end">
             <Grid item>
