@@ -74,7 +74,7 @@ const login = async (req, res) => {
   }
 };
 
-const users = async(req,res) =>{
+const search = async(req,res) =>{
   try {
     const { search } = req.query;
     const limit = 10;
@@ -98,4 +98,4 @@ const users = async(req,res) =>{
 
 
 
-export {register,login,users}
+export {register,login,search}
