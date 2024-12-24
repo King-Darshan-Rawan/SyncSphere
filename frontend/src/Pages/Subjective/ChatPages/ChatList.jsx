@@ -1,56 +1,81 @@
-import React from "react";
-import { Box, List, ListItem, ListItemText, Divider, Typography } from "@mui/material";
+//can use 
 
-const ChatList = ({ chats, onSelectChat }) => {
+
+import React, { useState } from "react";
+
+
+
+const ChatList = ({ users, onUserClick }) => {
+  const [searchTerm, setSearchTerm] = useState(""); // Search term
+  const [suggestions, setSuggestions] = useState([]); // Autosuggestions
+
+  // Handle search term changes
+  const handleSearchChange = (term) => {
+    setSearchTerm(term);
+
+    // Filter suggestions based on search term
+    if (term.trim() !== "") {
+      const matches = users.filter((user) =>
+        user.username.toLowerCase().includes(term.toLowerCase())
+      );
+      setSuggestions(matches);
+    } else {
+      setSuggestions([]);
+    }
+  };
+
   return (
-    // <Box
-    //   sx={{
-    //     width: { xs: "100%", sm: "30%" },  // Full width on mobile, 30% on larger screens
-    //     backgroundColor: "#f0f0f0",
-    //     p: 2,
-    //     height: { xs: "auto", sm: "100vh" },  // Height auto on mobile, 100vh on larger screens
-    //     overflowY: { sm: "scroll" },  // Enable scrolling only on larger screens
-    //     display: { xs: "block", sm: "flex" },
-    //   }}
-    // >
-    //   <Typography variant="h6" sx={{ mb: 2 }}>
-    //     Chats
-    //   </Typography>
-    //   <List>
-    //     {chats.map((chat, index) => (
-    //       <React.Fragment key={index}>
-    //         <ListItem button onClick={() => onSelectChat(chat)}>
-    //           <ListItemText primary={chat.name} secondary={chat.lastMessage} />
-    //         </ListItem>
-    //         <Divider />
-    //       </React.Fragment>
-    //     ))}
-    //   </List>
-    // </Box>
-    <Box
-  sx={{
-    width: { xs: "100%", sm: "30%" }, // Full width on mobile, 30% on larger screens
-    backgroundColor: "#f0f0f0",
-    p: 2,
-    height: "100%", // Full height
-    overflowY: "auto", // Enable independent scroll
-  }}
->
-  <Typography variant="h6" sx={{ mb: 2 }}>
-    Chats
-  </Typography>
-  <List>
-    {chats.map((chat, index) => (
-      <React.Fragment key={index}>
-        <ListItem button onClick={() => onSelectChat(chat)}>
-          <ListItemText primary={chat.name} secondary={chat.lastMessage} />
-        </ListItem>
-        <Divider />
-      </React.Fragment>
-    ))}
-  </List>
-</Box>
+    <div className="chat-list">
+      {/* Search Bar */}
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Search by username..."
+          value={searchTerm}
+          onChange={(e) => handleSearchChange(e.target.value)}
+        />
+      </div>
 
+      {/* Autosuggestions */}
+      {suggestions.length > 0 && (
+        <div className="suggestions">
+          {suggestions.map((suggestion) => (
+            <div
+              key={suggestion.id}
+              className="suggestion-item"
+              onClick={() => {
+                onUserClick(suggestion);
+                setSearchTerm(""); // Clear search term
+                setSuggestions([]); // Clear suggestions
+              }}
+            >
+              {suggestion.username}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* User List */}
+      <div className="user-list">
+        {users.map((user) => (
+          <div
+            key={user.id}
+            className="user-item"
+            onClick={() => onUserClick(user)}
+          >
+            <div className="user-info">
+              <img
+                src={user.profilePic}
+                alt={`${user.username}'s profile`}
+                className="user-pic"
+              />
+              <span>{user.username}</span>
+            </div>
+            <button className="video-call-btn">📹</button>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 
