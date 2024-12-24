@@ -1,7 +1,7 @@
 // Socket.IO functionality
 import {Message} from "../models/message.js"
 
-let socketio = (io) => {
+export const socketHandler = (io) => {
 
 // let chats = {}; // In-memory storage for chats
 
@@ -44,5 +44,3 @@ io.on("connection", (socket) => {
 });
 })
 }
-
-export {socketio};

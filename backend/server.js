@@ -5,7 +5,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import socketHandler from "./socket/chatSocket";
+import {socketHandler} from "./socket/chatSocket.js";
 
 // Database URL (move to .env file for security)
 const DB_URL = process.env.MONGO_ATLAS_WEB || "mongodb+srv://aniketdekate1:AniketDarshanWebProject@cluster0.bd4kn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
@@ -19,8 +19,6 @@ const io = new Server(server, {
   },
 });
 
-socketHandler(io);
-
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
@@ -32,6 +30,8 @@ import chatRouter from "./routes/chat.js";
 app.use("/users", userRouter);
 app.use("/workspace", workspaceRouter);
 app.use("/chat" , chatRouter);
+
+socketHandler(io);
 
 // Connect to MongoDB
 async function main() {

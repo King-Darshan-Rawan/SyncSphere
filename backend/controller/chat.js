@@ -1,11 +1,12 @@
 import {Chat} from "../models/chat.js";
 
-
 // create one on one chat
 let accessChat = async(req,res)=>{
     let {loggedInUserId , userId} = req.body;
+    console.log(loggedInUserId , userId);
 
     try{
+        console.log("");
         let chat = await Chat.findOne({
             isGroupChat: false,
             users: { $all: [userId, loggedInUserId] },
@@ -20,7 +21,6 @@ let accessChat = async(req,res)=>{
     }catch(err){
         res.status(400).json({msg:"error accessing Chat"});
     }
-
 }
 
 let fetchChat = async(req,res)=>{
