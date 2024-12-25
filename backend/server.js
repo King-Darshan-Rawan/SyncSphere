@@ -26,10 +26,12 @@ app.use(bodyParser.json());
 import userRouter from "./routes/user.js";
 import workspaceRouter from "./routes/workspace.js";
 import chatRouter from "./routes/chat.js";
+import messageRouter  from './routes/message.js';
+
 app.use("/users", userRouter);
 app.use("/workspace", workspaceRouter);
 app.use("/chat" , chatRouter);
-
+app.use("/message" , messageRouter);
 // Connect to MongoDB
 async function main() {
   try {
