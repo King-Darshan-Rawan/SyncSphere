@@ -1,28 +1,93 @@
-//can use 
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { IoMdAdd } from "react-icons/io";
+import { GoDeviceCameraVideo } from "react-icons/go";
+import {
+  accessChat,
+  fetchChat,
+  createGroupChat,
+  renameGroup,
+  removeFromGroup,
+  addtoGroup,
+} from "../../../../../backend/controller/chat";
 
 
-import React, { useState } from "react";
 
-
-
-const ChatList = ({ users, onUserClick }) => {
+const ChatList = () => {
+  const [users, setUsers] = useState([]); // Full list of users
+  const [filteredUsers, setFilteredUsers] = useState([]); // Filtered users
+  const [searchedUsers, setSearchedUsers] = useState([]); // Users from API search
   const [searchTerm, setSearchTerm] = useState(""); // Search term
-  const [suggestions, setSuggestions] = useState([]); // Autosuggestions
+  const loggedInUserId = "currentLoggedInUserId"; // Replace with actual logged-in user ID.
 
-  // Handle search term changes
-  const handleSearchChange = (term) => {
-    setSearchTerm(term);
-
-    // Filter suggestions based on search term
-    if (term.trim() !== "") {
-      const matches = users.filter((user) =>
-        user.username.toLowerCase().includes(term.toLowerCase())
+  // Fetch users from API based on search
+  const searchUsers = async (searchQuery) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/users/search?search=${searchQuery}`
       );
-      setSuggestions(matches);
-    } else {
-      setSuggestions([]);
+      setSearchedUsers(response.data); // Store searched users
+      setFilteredUsers(response.data); // Update filtered users
+    } catch (error) {
+      console.error("Error fetching users: ", error);
     }
   };
+
+  // Handle search term changes
+  const onSearchChange = (query) => {
+    setSearchTerm(query);
+  };
+
+  // Fetch initial user list on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/users`);
+        setUsers(response.data); // Store initial users
+        setFilteredUsers(response.data); // Display initial users
+      } catch (error) {
+        console.error("Error fetching initial users: ", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // Trigger search when searchTerm changes
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setSearchedUsers([]); // Clear searched users
+      setFilteredUsers(users); // Reset to full user list
+    } else {
+      searchUsers(searchTerm.trim());
+    }
+  }, [searchTerm, users]);
+
+  // Handle chat creation
+  const createChat = async (userId) => {
+    try {
+      console.log("Sending request to backend with:", {
+        loggedInUserId,
+        userId,
+      });
+  
+      const response = await axios.post("http://localhost:3000/chat/accessChat", {
+        loggedInUserId, // Ensure this is not hardcoded and contains an actual ID
+        userId,
+      });
+  
+      console.log("Chat created successfully:", response.data);
+      alert(`Chat with ${response.data.chatName} created successfully!`);
+    } catch (error) {
+      console.error(
+        "Error creating chat:",
+        error.response?.data || error.message
+      );
+      alert("Failed to access chat. Please try again.");
+    }
+  };
+  
+  
 
   return (
     <div className="chat-list">
@@ -30,50 +95,62 @@ const ChatList = ({ users, onUserClick }) => {
       <div className="search-bar">
         <input
           type="text"
-          placeholder="Search by username..."
+          placeholder="Search..."
           value={searchTerm}
-          onChange={(e) => handleSearchChange(e.target.value)}
+          onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
 
-      {/* Autosuggestions */}
-      {suggestions.length > 0 && (
-        <div className="suggestions">
-          {suggestions.map((suggestion) => (
-            <div
-              key={suggestion.id}
-              className="suggestion-item"
-              onClick={() => {
-                onUserClick(suggestion);
-                setSearchTerm(""); // Clear search term
-                setSuggestions([]); // Clear suggestions
-              }}
-            >
-              {suggestion.username}
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* User List */}
       <div className="user-list">
-        {users.map((user) => (
-          <div
-            key={user.id}
-            className="user-item"
-            onClick={() => onUserClick(user)}
-          >
-            <div className="user-info">
-              <img
-                src={user.profilePic}
-                alt={`${user.username}'s profile`}
-                className="user-pic"
-              />
-              <span>{user.username}</span>
-            </div>
-            <button className="video-call-btn">📹</button>
-          </div>
-        ))}
+        {searchedUsers.length > 0
+          ? searchedUsers.map((user) => (
+              <div key={user.id} className="user-item">
+                <div className="user-info">
+                  <img
+                    src={user.profilePic || "default-avatar.png"}
+                    alt={`${user.name || "Unknown User"}'s profile`}
+                    className="user-pic"
+                  />
+                  <span>{user.name || user.userId || "Unknown User"}</span>
+                </div>
+                <button
+  className="action-btn"
+  onClick={() => {
+    console.log("Creating chat with userId:", user.userId);
+    if (user.userId) {
+      createChat(user.userId);
+    } else {
+      console.error("userId is missing for:", user);
+    }
+  }}
+>
+  <IoMdAdd />
+</button>
+
+              </div>
+            ))
+          : filteredUsers.map((user) => (
+              <div key={user.id} className="user-item">
+                <div className="user-info">
+                  <img
+                    src={user.profilePic || "default-avatar.png"}
+                    alt={`${user.name || "Unknown User"}'s profile`}
+                    className="user-pic"
+                  />
+                  <span>{user.name || user.userId || "Unknown User"}</span>
+                </div>
+                <button className="video-call-btn">
+                  <GoDeviceCameraVideo />
+                </button>
+              </div>
+            ))}
+      </div>
+
+      {/* Footer Buttons */}
+      <div className="chat-list-footer">
+        <button className="join-button bottom-spc">Join Team</button>
+        <button className="create-button bottom-spc">Create Team</button>
       </div>
     </div>
   );

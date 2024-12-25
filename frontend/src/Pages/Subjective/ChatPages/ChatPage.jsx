@@ -3,79 +3,11 @@ import "./ChatPage.css";
 import { GoMoveToEnd } from "react-icons/go";
 import { GoMoveToStart } from "react-icons/go";
 import { FaMicrophoneAlt } from "react-icons/fa";
+import axios from "axios";
+import ChatList from "./ChatList";
 
-import {
-  accessChat,
-  fetchChat,
-  createGroupChat,
-  renameGroup,
-  removeFromGroup,
-  addtoGroup,
-} from "../../../../../backend/controller/chat";
 //FetchChat = chatlist
 //left segment
-const ChatList = ({ users, onUserClick, searchTerm, onSearchChange }) => {
-  const [filteredUsers, setFilteredUsers] = useState(users);
-
-  // API call to fetch users based on search term
-  const searchUsers = async (searchQuery) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:3000/users/search?search=${searchQuery}`
-      );
-      setFilteredUsers(response.data); // Set the filtered users based on the search result
-    } catch (error) {
-      console.error("Error fetching users: ", error);
-    }
-  };
-
-  // Handle search term change
-  useEffect(() => {
-    if (searchTerm) {
-      searchUsers(searchTerm); // Search for users when the search term changes
-    } else {
-      setFilteredUsers(users); // Show all users if there's no search term
-    }
-  }, [searchTerm, users]);
-
-  return (
-    <div className="chat-list">
-      <div className="search-bar">
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchTerm}
-          onChange={(e) => {
-            onSearchChange(e.target.value); // Update search term
-          }}
-        />
-      </div>
-      <div className="user-list">
-        {filteredUsers.map((user) => (
-          <div
-            key={user.id}
-            className="user-item"
-            onClick={() => onUserClick(user)}
-          >
-            <div className="user-info">
-              <img
-                src={user.profilePic}
-                alt={`${user.name}'s profile`}
-                className="user-pic"
-              />
-              <span>{user.name}</span>
-            </div>
-            <button className="video-call-btn">📹</button>
-          </div>
-        ))}
-      </div>
-      <div className="chat-list-footer">
-        <button className="join-button bottom-spc">Join Team</button>
-        <button className="create-button bottom-spc">Create Team</button>
-      </div>
-    </div>
-  );
-};
 
 //right top
 const ChatSection = ({
