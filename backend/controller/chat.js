@@ -1,37 +1,47 @@
 import {Chat} from "../models/chat.js";
 
 // create one on one chat if previous does not exist
-let accessChat = async (req, res) => {
-  let { loggedInUserId, userId } = req.body;
+const accessChat = async (req, res) => {
+  console.log("🔍 Incoming request to accessChat:", req.body);
+
+  const { loggedInUserId, userId } = req.body;
 
   if (!userId || !loggedInUserId) {
-    console.error("Invalid user data:", { loggedInUserId, userId });
-    return res.status(400).json({ msg: "Invalid user data" });
+      console.error("❌ Invalid user data:", { loggedInUserId, userId });
+      return res.status(400).json({ msg: "Invalid user data" });
   }
 
   try {
-    console.log("Accessing chat between:", loggedInUserId, userId);
+      console.log(`📡 Searching for one-to-one chat between ${loggedInUserId} and ${userId}`);
 
-    // Find or create chat
-    let chat = await Chat.findOne({
-      isGroupChat: false,
-      users: { $all: [userId, loggedInUserId] },
-    }).populate("users", "userId");
+      // Search for one-to-one chat based on userId strings
+      let chat = await Chat.findOne({
+          isGroupChat: false,
+          oneToOneUsers: { $all: [userId, loggedInUserId] }
+      }).populate("latestMessage").populate("users");
 
-    if (!chat) {
-      console.log("Creating new chat");
-      chat = await Chat.create({
-        chatName: "One-on-One Chat",
-        users: [userId, loggedInUserId],
-      });
-    }
+      console.log("🛠️ Chat search result:", chat);
 
-    res.status(200).json(chat);
+      if (!chat) {
+          console.log("✨ No existing one-to-one chat found, creating a new chat...");
+          chat = await Chat.create({
+              chatName: "One-on-One Chat",
+              isGroupChat: false,
+              oneToOneUsers: [userId, loggedInUserId]
+          });
+      }
+
+      console.log("✅ Chat found/created successfully:", chat);
+      return res.status(200).json(chat);
+
   } catch (err) {
-    console.error("Error accessing chat:", err.message);
-    res.status(500).json({ msg: "Server error while accessing chat" });
+      console.error("❌ Server error while accessing/creating chat:", err.message);
+      console.error("🛠️ Full error stack:", err.stack);
+      return res.status(500).json({ msg: "Server error while accessing/creating chat" });
   }
 };
+
+
 
 // check for previous chat
 let fetchChat = async(req,res)=>{
