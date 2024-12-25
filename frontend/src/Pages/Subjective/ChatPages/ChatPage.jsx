@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
 import "./ChatPage.css";
-import { GoMoveToEnd } from "react-icons/go";
-import { GoMoveToStart } from "react-icons/go";
+import { GoMoveToEnd, GoMoveToStart } from "react-icons/go";
 import { FaMicrophoneAlt } from "react-icons/fa";
 import axios from "axios";
+import { io } from "socket.io-client";
 import ChatList from "./ChatList";
 
-//FetchChat = chatlist
-//left segment
+const socket = io("http://localhost:3000"); // Adjust to your backend socket URL
 
-//right top
+// Chat Section (Right Side)
 const ChatSection = ({
   selectedUser,
   chatMessages,
@@ -29,11 +28,11 @@ const ChatSection = ({
     <div className="chat-section">
       {selectedUser ? (
         <>
-          <div className="chat-header">{selectedUser.name}</div>
+          <div className="chat-header">Chatting with: {selectedUser.name}</div>
           <div className="chat-messages">
-            {chatMessages.map((msg) => (
+            {chatMessages.map((msg, index) => (
               <div
-                key={msg.id}
+                key={index}
                 className={`chat-message ${
                   msg.sender === "me" ? "sent" : "received"
                 }`}
@@ -65,111 +64,166 @@ const ChatSection = ({
     </div>
   );
 };
-//right bottom
+
+// Task and Team Sidebar (Right Bottom)
 const TaskTeam = () => {
   const [sidebar, setSidebar] = useState(true);
-  const [isActive, setIsActive] = useState(true); // State for dynamic class
+  const [isActive, setIsActive] = useState(true);
 
   const toggleSidebar = () => {
     setSidebar(!sidebar);
-    setIsActive(!isActive); // Toggle the active class state
+    setIsActive(!isActive);
   };
 
   return (
-    <>
-      <div className="chatmain-container">
-        <div className="hider-container">
-          <button
-            onClick={toggleSidebar}
-            className={`hider ${sidebar ? "sidebar-open" : "sidebar-closed"}`}
-          >
-            {sidebar ? <GoMoveToEnd /> : <GoMoveToStart />}
-          </button>
-        </div>
-
-        <div
-          className={`task-team ${
-            isActive ? "active-sidebar" : "inactive-sidebar"
-          }`}
+    <div className="chatmain-container">
+      <div className="hider-container">
+        <button
+          onClick={toggleSidebar}
+          className={`hider ${sidebar ? "sidebar-open" : "sidebar-closed"}`}
         >
-          <div className="team">
-            <div className="task-top">
-              <button className="join-button">Join Meet</button>
-              <button className="create-button">Create Meet</button>
-            </div>
-            <div className="head">
-              {" "}
-              <p className="titel-sub-cont"> Team</p>
-            </div>
+          {sidebar ? <GoMoveToEnd /> : <GoMoveToStart />}
+        </button>
+      </div>
+      <div
+        className={`task-team ${
+          isActive ? "active-sidebar" : "inactive-sidebar"
+        }`}
+      >
+        <div className="team">
+          <div className="task-top">
+            <button className="join-button">Join Meet</button>
+            <button className="create-button">Create Meet</button>
           </div>
-          <div className="task">
-            <div className="head">
-              {" "}
-              <p className="titel-sub-cont"> Task</p>
-            </div>
+          <div className="head">
+            <p className="titel-sub-cont">Team</p>
+          </div>
+        </div>
+        <div className="task">
+          <div className="head">
+            <p className="titel-sub-cont">Task</p>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
-//center
+
+// Main Chat Page
 const ChatPage = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
-  const [chat, setChat] = useState(null); // Store chat object here
+  const [chat, setChat] = useState(null); // Stores chat object
+  const [userChats, setUserChats] = useState([]); // Stores all chats for the user
 
-  const users = [
-    { id: 1, name: "JohnDoe", profilePic: "https://via.placeholder.com/50" },
-    { id: 2, name: "JaneSmith", profilePic: "https://via.placeholder.com/50" },
-    { id: 3, name: "User123", profilePic: "https://via.placeholder.com/50" },
-  ];
+  const loggedInUserId = "Antairo"; // Replace with actual logged-in userId
 
-  // Function to fetch or create a chat when a user is selected
+  // ✅ Fetch all chats when the page loads
+  useEffect(() => {
+    const fetchUserChats = async () => {
+      try {
+        console.log("📡 Fetching user chats...");
+        const response = await axios.post("http://localhost:3000/chat/fetchChat", {
+          loggedInUserId,
+        });
+        console.log("✅ User Chats Fetched:", response.data);
+        setUserChats(response.data);
+      } catch (error) {
+        console.error("❌ Error fetching chats:", error.response?.data || error.message);
+      }
+    };
+
+    fetchUserChats();
+  }, []);
+
+  // ✅ Join Chat Room with Socket.IO
+  useEffect(() => {
+    if (chat?._id) {
+      socket.emit("join chat", chat._id);
+      console.log(`📡 Joined chat room: ${chat._id}`);
+    }
+  }, [chat]);
+
+  // ✅ Listen for Incoming Messages
+  useEffect(() => {
+    socket.on("message received", (newMessage) => {
+      console.log("📩 New message received:", newMessage);
+      setChatMessages((prevMessages) => [...prevMessages, newMessage]);
+    });
+
+    return () => {
+      socket.off("message received");
+    };
+  }, []);
+
+  // ✅ Handle user selection and chat access/creation
   const handleUserClick = async (user) => {
     setSelectedUser(user);
 
     try {
-      // Replace 'loggedInUserId' with the actual logged-in user's ID (you should have this stored)
-      const loggedInUserId = "currentLoggedInUserId"; // Example placeholder, change accordingly
-      const response = await axios.post("/api/chat/accessChat", {
+      console.log(`📡 Fetching/Creating chat with ${user.id}`);
+
+      const response = await axios.post("http://localhost:3000/chat/accessChat", {
         loggedInUserId,
         userId: user.id,
       });
 
-      const chatData = response.data; // The chat data returned from the backend
-      setChat(chatData); // Update the chat state with the new chat
+      const chatData = response.data;
+      console.log("✅ Chat Data:", chatData);
+
+      setChat(chatData); // Set chat object
       setChatMessages([
         { id: 1, text: `Hi, ${user.name}!`, sender: "them" },
         { id: 2, text: "Hello!", sender: "me" },
       ]);
+
+      socket.emit("join chat", chatData._id); // Join the selected chat room
     } catch (error) {
-      console.error("Error accessing or creating chat:", error);
+      console.error("❌ Error accessing or creating chat:", error.response?.data || error.message);
     }
   };
 
-  const handleSendMessage = (text) => {
-    setChatMessages([
-      ...chatMessages,
-      { id: chatMessages.length + 1, text, sender: "me" },
-    ]);
+  // ✅ Handle sending messages
+  const handleSendMessage = async (text) => {
+    try {
+      const newMessage = {
+        chatId: chat._id,
+        sender: loggedInUserId,
+        text,
+      };
+
+      // Emit the message via socket
+      socket.emit("send message", newMessage);
+
+      // Update local state
+      setChatMessages((prevMessages) => [
+        ...prevMessages,
+        { id: prevMessages.length + 1, text, sender: "me" },
+      ]);
+    } catch (error) {
+      console.error("❌ Error sending message:", error.response?.data || error.message);
+    }
   };
 
   return (
     <div className="chat-page">
+      {/* Left Sidebar (User List) */}
       <ChatList
-        users={users}
-        onUserClick={handleUserClick}
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
+        onOpenChat={handleUserClick}
+        chats={userChats}
+        loggedInUserId={loggedInUserId}
       />
+
+      {/* Chat Section */}
       <ChatSection
         selectedUser={selectedUser}
         chatMessages={chatMessages}
         onSendMessage={handleSendMessage}
         onVoiceMessage={(msg) => console.log(msg)}
       />
+
+      {/* Task and Team Sidebar */}
       <TaskTeam />
     </div>
   );

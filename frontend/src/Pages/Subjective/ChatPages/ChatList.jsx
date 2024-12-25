@@ -13,7 +13,7 @@ import {
 
 
 
-const ChatList = () => {
+const ChatList = ({ onOpenChat }) => {
   const [users, setUsers] = useState([]); // Full list of users
   const [filteredUsers, setFilteredUsers] = useState([]); // Filtered users
   const [searchedUsers, setSearchedUsers] = useState([]); // Users from API search
@@ -64,7 +64,7 @@ const ChatList = () => {
   }, [searchTerm, users]);
 
   // Handle chat creation
-  const createChat = async (userId) => {
+  const createChat = async (userId, userName) => {
     try {
       console.log("Sending request to backend with:", {
         loggedInUserId,
@@ -72,12 +72,16 @@ const ChatList = () => {
       });
   
       const response = await axios.post("http://localhost:3000/chat/accessChat", {
-        loggedInUserId, // Ensure this is not hardcoded and contains an actual ID
+        loggedInUserId,
         userId,
       });
   
       console.log("Chat created successfully:", response.data);
-      alert(`Chat with ${response.data.chatName} created successfully!`);
+  
+      // Open chat interface in ChatPage
+      if (onOpenChat) {
+        onOpenChat({ id: userId, name: userName });
+      }
     } catch (error) {
       console.error(
         "Error creating chat:",
@@ -119,11 +123,12 @@ const ChatList = () => {
   onClick={() => {
     console.log("Creating chat with userId:", user.userId);
     if (user.userId) {
-      createChat(user.userId);
+      createChat(user.userId, user.name || user.userId);
     } else {
       console.error("userId is missing for:", user);
     }
   }}
+  
 >
   <IoMdAdd />
 </button>
