@@ -4,12 +4,9 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import { createServer } from "http";
-import { Server } from "socket.io";
+
 // Database URL (move to .env file for security)
-
-
 const DB_URL = process.env.MONGO_ATLAS_WEB || "mongodb+srv://aniketdekate1:AniketDarshanWebProject@cluster0.bd4kn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-
 
 // Initialize app and server
 const app = express();
@@ -50,33 +47,7 @@ app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-// Socket.IO functionality
-let chats = {}; // In-memory storage for chats
 
-io.on("connection", (socket) => {
-  console.log(`User connected: ${socket.id}`);
-
-  // Join a room
-  socket.on("joinRoom", (roomId) => {
-    socket.join(roomId);
-    console.log(`User ${socket.id} joined room ${roomId}`);
-  });
-
-  // Handle sending messages
-  socket.on("sendMessage", ({ roomId, sender, text }) => {
-    const message = { sender, text, timestamp: new Date() };
-    if (!chats[roomId]) chats[roomId] = [];
-    chats[roomId].push(message);
-
-    // Emit message to everyone in the room
-    io.to(roomId).emit("receiveMessage", message);
-  });
-
-  // Disconnect
-  socket.on("disconnect", () => {
-    console.log(`User disconnected: ${socket.id}`);
-  });
-});
 
 // Start the server
 const PORT = process.env.PORT || 3000;
