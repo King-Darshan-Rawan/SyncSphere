@@ -138,25 +138,41 @@ const ChatPage = () => {
   }, []);
 
   // ✅ Join Chat Room with Socket.IO
-  useEffect(() => {
-    if (chat?._id) {
-      socket.emit("join chat", chat._id);
-      console.log(`📡 Joined chat room: ${chat._id}`);
-    }
-  }, [chat]);
+  // ✅ Join Chat Room with Socket.IO
+useEffect(() => {
+  if (chat?._id) {
+    socket.emit("join chat", chat._id);
+    console.log(`📡 Joined chat room: ${chat._id}`);
+  }
+}, [chat]);
+
 
   // ✅ Listen for Incoming Messages
+  // useEffect(() => {
+  //   socket.on("message received", (newMessage) => {
+  //     console.log("📩 New message received:", newMessage);
+  //     setChatMessages((prevMessages) => [...prevMessages, newMessage]);
+  //   });
+
+  //   return () => {
+  //     socket.off("message received");
+  //   };
+  // }, []);
+
+
   useEffect(() => {
-    socket.on("message received", (newMessage) => {
+    const messageListener = (newMessage) => {
       console.log("📩 New message received:", newMessage);
       setChatMessages((prevMessages) => [...prevMessages, newMessage]);
-    });
-
+    };
+    socket.on("message received", messageListener);
+  
     return () => {
-      socket.off("message received");
+      socket.off("message received", messageListener);
     };
   }, []);
-
+  
+  
   // ✅ Handle user selection and chat access/creation
   const handleUserClick = async (user) => {
     setSelectedUser(user);
