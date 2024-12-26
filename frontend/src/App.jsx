@@ -12,6 +12,7 @@ import ChatPage from "./Pages/Subjective/ChatPages/ChatPage";
 import SignIn from "./Pages/Permitive/SingIn";
 import SignUp from "./Pages/Permitive/SingUp";
 import ChatList from "./Pages/Subjective/ChatPages/ChatList";
+import Tempp from "./temp/Tempp";
 function App() {
   return (
     <Router>
@@ -26,6 +27,7 @@ function App() {
         <Route path="/chat/:chatid" element={<ChatList />} />
         <Route path="/SignIn" element={<SignIn />} />
         <Route path="/SingUp" element={<SignUp />} />
+        <Route path="/temp" element={<Tempp />}/>
       </Routes>
       <br />
       <br />
