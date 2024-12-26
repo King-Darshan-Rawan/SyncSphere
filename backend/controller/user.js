@@ -1,31 +1,44 @@
-import { User } from "../models/user.js";
+import express from "express";
 import bcrypt from "bcrypt";
-// const jwt = require("jsonwebtoken");
 import jwt from "jsonwebtoken";
+import { User } from "../models/user.js";
 
+const router = express.Router();
 const SECRET_KEY = "adsasd";
-let register = async(req,res)=>{
-    let {firstName, lastName , email , userName, password } = req.body;
-    const fullname = firstName + " " + lastName;
 
-    try{
-        let check = await User.findOne({userId:userName});
-        if(check){
-            res.status(400).json({msg:"This username already exist"});
-        }else{
-            const hashpass = await bcrypt.hash(password, 10);
-            const insert_data = await User.insertMany({username:fullname , email:email , password:hashpass , userId:userName});
-            res.status(200).json({msg:"User registered" , _id:insert_data[0]._id,userName,email});
-        }
-    }catch(err){
-        res.status(400).json(err);
+// Register a new user
+const register = async (req, res) => {
+  let { firstName, lastName, email, userName, password } = req.body;
+  const fullname = `${firstName} ${lastName}`;
+
+  try {
+    let check = await User.findOne({ userId: userName });
+    if (check) {
+      res.status(400).json({ msg: "This username already exists" });
+    } else {
+      const hashpass = await bcrypt.hash(password, 10);
+      const insert_data = await User.insertMany({
+        username: fullname,
+        email: email,
+        password: hashpass,
+        userId: userName,
+      });
+      res.status(200).json({
+        msg: "User registered",
+        _id: insert_data[0]._id,
+        userName,
+        email,
+      });
     }
-}
+  } catch (err) {
+    res.status(400).json(err);
+  }
+};
 
+// User login
 const login = async (req, res) => {
   const { userConfirm, password } = req.body;
 
-  // Check if required fields are missing
   if (!userConfirm || !password) {
     return res.status(400).json({
       error: "MISSING_FIELDS",
@@ -34,7 +47,6 @@ const login = async (req, res) => {
   }
 
   try {
-    // Find user by username or email
     const user = await User.findOne({
       $or: [{ userId: userConfirm }, { email: userConfirm }],
     });
@@ -47,7 +59,6 @@ const login = async (req, res) => {
       });
     }
 
-    // Compare the provided password with the stored hashed password
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -58,7 +69,6 @@ const login = async (req, res) => {
       });
     }
 
-    // Generate JWT token
     const token = jwt.sign({ username: userConfirm }, SECRET_KEY, {
       expiresIn: "3h",
     });
@@ -74,28 +84,36 @@ const login = async (req, res) => {
   }
 };
 
-const search = async(req,res) =>{
+// Search users
+const search = async (req, res) => {
   try {
     const { search } = req.query;
     const limit = 10;
-    console.log(search);
 
     if (!search) {
       return res.status(400).json({ message: "Search string is required" });
     }
-    console.log("2");
-    const users = await User.find({ userId: { $regex: `^${search}`, $options: "i" } })
-      .limit(limit)
-      .select("userId");
-    console.log(users);
-    console.log("3");
+
+    const users = await User.find(
+      { userId: { $regex: `^${search}`, $options: "i" } },
+      "userId"
+    ).limit(limit);
 
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch users" });
   }
-}
+};
 
+// Fetch all users
+router.get("/", async (req, res) => {
+  try {
+    const users = await User.find({}, "userId name profilePic");
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error.message);
+    res.status(500).json({ msg: "Server error while fetching users" });
+  }
+});
 
-
-export {register,login,search}
+export { register, login, search, router };
