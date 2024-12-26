@@ -180,7 +180,7 @@ useEffect(() => {
     try {
       console.log(`📡 Fetching/Creating chat with ${user.id}`);
 
-      const response = await axios.post("http://localhost:3000/chat/accessChat", {
+      const response = await axios.post("http://localhost:3000/chat/createChat", {
         loggedInUserId,
         userId: user.id,
       });

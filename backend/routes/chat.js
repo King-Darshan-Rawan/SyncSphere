@@ -1,11 +1,11 @@
 
-  import { accessChat, fetchChat, createGroupChat, renameGroup, removeFromGroup, addToGroup } from "../controller/chat.js";
+  import { createChat, fetchChat, createGroupChat, renameGroup, removeFromGroup, addToGroup } from "../controller/chat.js";
 
 import express from "express";
 const router = express.Router();
 
-router.route("/accessChat")
-.post(accessChat)
+router.route("/createChat")
+.post(createChat)
 
 router.route("/fetchChat")
 .get(fetchChat)
