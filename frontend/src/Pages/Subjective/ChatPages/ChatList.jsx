@@ -8,7 +8,7 @@ import {
   createGroupChat,
   renameGroup,
   removeFromGroup,
-  addtoGroup,
+  addToGroup,
 } from "../../../../../backend/controller/chat";
 
 
@@ -116,17 +116,18 @@ const ChatList = ({ onOpenChat }) => {
                     alt={`${user.name || "Unknown User"}'s profile`}
                     className="user-pic"
                   />
-                  <span>{user.name || user.userId || "Unknown User"}</span>
+                  <span>{user.name || user.userId || "Unnamed User"}</span>
                 </div>
                 <button
   className="action-btn"
   onClick={() => {
-    console.log("Creating chat with userId:", user.userId);
-    if (user.userId) {
-      createChat(user.userId, user.name || user.userId);
-    } else {
-      console.error("userId is missing for:", user);
-    }
+    console.log("Creating chat with user:", user);
+if (user?.userId) {
+  createChat(user.userId, user.name || user.userId);
+} else {
+  console.error("Error: userId is missing or undefined for:", user);
+}
+
   }}
   
 >
