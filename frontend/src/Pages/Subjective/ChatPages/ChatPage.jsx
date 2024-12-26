@@ -148,16 +148,16 @@ useEffect(() => {
 
 
   // ✅ Listen for Incoming Messages
-  // useEffect(() => {
-  //   socket.on("message received", (newMessage) => {
-  //     console.log("📩 New message received:", newMessage);
-  //     setChatMessages((prevMessages) => [...prevMessages, newMessage]);
-  //   });
+  useEffect(() => {
+    socket.on("message received", (newMessage) => {
+      console.log("📩 New message received:", newMessage);
+      setChatMessages((prevMessages) => [...prevMessages, newMessage]);
+    });
 
-  //   return () => {
-  //     socket.off("message received");
-  //   };
-  // }, []);
+    return () => {
+      socket.off("message received");
+    };
+  }, []);
 
 
   useEffect(() => {
