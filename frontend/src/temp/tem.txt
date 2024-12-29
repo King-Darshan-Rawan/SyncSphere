@@ -9,12 +9,8 @@ const ChatSchema = new mongoose.Schema({
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-<<<<<<< HEAD
         }
     ],
-=======
-        
->>>>>>> 1bf633ad93fb59807cbae514500068e9b2bed17c
 
     oneToOneMessages: [ // Sequential message storage for one-to-one chats
         {
@@ -22,14 +18,8 @@ const ChatSchema = new mongoose.Schema({
             text: { type: String }, // Message content
             timestamp: { type: Date, default: Date.now }, // Message timestamp
         }
-<<<<<<< HEAD
     ],
 
-=======
-    ]
-}
-    ],
->>>>>>> 1bf633ad93fb59807cbae514500068e9b2bed17c
     // Group Chat Section
     groupUsers: [
         {

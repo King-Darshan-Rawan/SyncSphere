@@ -86,6 +86,7 @@ const fetchChatById = async (req, res) => {
       return res.status(404).json({ error: "Chat not found" });
     }
 
+    console.log("✅ Chat successfully created or retrieved:", chat);
     res.status(200).json(chat);
   } catch (error) {
     res.status(500).json({ error: error.message });
