@@ -1,60 +1,83 @@
 import { Message } from "../models/message.js";
 import { Chat } from "../models/chat.js";
 
-let sendMessage = async (req, res) => {
-    const { chatId, text, senderId } = req.body;
-  
-    if (!chatId || !text || !senderId) {
-      console.error("❌ Invalid message data:", req.body);
-      return res.status(400).json({ msg: "All fields are required (chatId, text, senderId)" });
-    }
-  
+const sendMessage = async (req, res) => {
     try {
-      // Check if the chat exists
-      const chat = await Chat.findById(chatId);
-      if (!chat) {
-        console.error("❌ Chat not found:", chatId);
-        return res.status(404).json({ msg: "Chat not found" });
-      }
+      const { chatId, receiverId, text } = req.body;
   
-      // Create and save the message
-      const newMessage = await Message.create({
+      const newMessage = new Message({
         chatId,
-        senderId,
+        receiverId,
         text,
       });
   
-      console.log("✅ Message created:", newMessage);
+      const savedMessage = await newMessage.save();
   
-      res.status(201).json(newMessage);
+      // Optionally, you can update the Chat with the latest message
+      const chat = await Chat.findByIdAndUpdate(
+        chatId,
+        { $set: { "Users.oneToOneUser.Message": savedMessage._id } },
+        { new: true }
+      );
+  
+      res.status(201).json(savedMessage);
     } catch (error) {
-      console.error("❌ Error sending message:", error.message);
-      res.status(500).json({ msg: "Server error while sending message", error: error.message });
+      res.status(500).json({ error: error.message });
     }
   };
   
 
-let fetchMessage = async(req,res)=>{
-    let {chatId} = req.params;
-    try{
-        let chat = await Chat.find({_id:chatId});
-        if(chat){
-            let msg = await Message.find
-        }else{
-            res.status(400).json({msg:"first create a chat"});
-        }
-    }catch(error){
-        res.status(400).json({msg:"error is fetching messages"});
+  const fetchMessages = async (req, res) => {
+    try {
+      const { chatId } = req.params;
+      const messages = await Message.find({ chatId });
+  
+      if (!messages.length) {
+        return res.status(404).json({ error: "No messages found for this chat" });
+      }
+  
+      res.status(200).json(messages);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
-  }
+  };
   
 
-let editMessage = async(req,res)=>{
-    
-}
+  const editMessage = async (req, res) => {
+    try {
+      const { messageId } = req.params;
+      const { text } = req.body;
+  
+      const updatedMessage = await Message.findByIdAndUpdate(
+        messageId,
+        { text },
+        { new: true }
+      );
+  
+      if (!updatedMessage) {
+        return res.status(404).json({ error: "Message not found" });
+      }
+  
+      res.status(200).json(updatedMessage);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
 
-let deleteMessage = async(req,res)=>{
-    
-}
+  const deleteMessage = async (req, res) => {
+    try {
+      const { messageId } = req.params;
+  
+      const deletedMessage = await Message.findByIdAndDelete(messageId);
+  
+      if (!deletedMessage) {
+        return res.status(404).json({ error: "Message not found" });
+      }
+  
+      res.status(200).json({ message: "Message deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
 
-export {sendMessage , fetchMessage , editMessage , deleteMessage};
+export {sendMessage , fetchMessages , editMessage , deleteMessage};

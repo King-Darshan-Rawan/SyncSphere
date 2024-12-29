@@ -1,25 +1,30 @@
 
-  import { createChat, fetchChat, createGroupChat, renameGroup, removeFromGroup, addToGroup} from "../controller/chat.js"
+  import { createGroupChat , createOneToOneChat ,removeUserFromGroup ,addUserToGroup , fetchChatById ,fetchOneToOneChats ,fetchGroupChats} from "../controller/chat.js"
 
 import express from "express";
 const router = express.Router();
 
-router.post('/chat/createChat', createChat);
+router.route("/createOneToOneChat")
+.post(createOneToOneChat)
 
-
-router.route("/fetchChat")
-.get(fetchChat)
+router.route("/fetchOneToOneChats")
+.get(fetchOneToOneChats)
 
 router.route("/createGroupChat")
 .post(createGroupChat)
 
-router.route("/renameGroup")
-.put(renameGroup)
+router.route("/fetchGroupChats")
+.get(fetchGroupChats)
 
-router.route("/removeFromGroup")
-.put(removeFromGroup)
 
-router.route("/addtoGroup")
-.put(addToGroup)
+router.route("/fetchChatById")
+.get(fetchChatById)
+
+router.route("/addUserToGroup")
+.put(addUserToGroup)
+
+router.route("/removeUserFromGroup")
+.put(removeUserFromGroup)
+
 
 export default router;

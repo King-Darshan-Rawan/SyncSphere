@@ -1,4 +1,4 @@
-import {sendMessage , deleteMessage , editMessage , fetchMessage} from "../controller/message.js";
+import {sendMessage , deleteMessage , editMessage , fetchMessages} from "../controller/message.js";
 import express from "express";
 const router = express.Router();
 
@@ -6,7 +6,7 @@ router.route("/sendMessage")
 .post(sendMessage);
 
 router.route("/fetchMessage/:chatId")
-.get(fetchMessage);
+.get(fetchMessages);
 
 router.route("/editMessage")
 .put(editMessage);
