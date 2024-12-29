@@ -61,34 +61,76 @@ const createOneToOneChat = async (req, res) => {
 
 // Fetch one to one chats for a user
 const fetchOneToOneChat = async (req, res) => {
-  const { sender, receiver } = req.body;
-
+  let {sender} = req.body;
   try {
-    // Ensure both sender and receiver are provided
-    if (!sender || !receiver) {
-      return res.status(400).json({ error: "Sender and receiver must be provided." });
-    }
+    // Fetch all chats
+    const chats = await Chat.find({sender:sender})
+    .populate({
+      path: "Users.oneToOneUser.Message",
+      select: "text createdAt",
+      options: { strictPopulate: false }, // Ensure no error if empty
+    })
+    .populate({
+      path: "Users.groupUsers.Message",
+      select: "text createdAt",
+      options: { strictPopulate: false }, // Ensure no error if empty
+    })
+      .lean(); // Convert Mongoose documents to plain objects
 
-    // Find the chat where the sender and receiver are part of the 'oneToOneUser' array
-    const existingChat = await Chat.findOne({
-      isGroupChat: false, // Ensure it's not a group chat
-      sender: sender,  // The sender of the message
-      "Users.oneToOneUser.User2": receiver,  // The second user (receiver) in the one-to-one chat
-    }).populate("Users.oneToOneUser.Message"); // Populate the messages for the one-to-one user
+    // Structure the response
+    const response = Object.values(
+      chats.reduce((acc, chat) => {
+        // If sender is not already in the accumulator, initialize it
+        if (!acc[chat.sender]) {
+          acc[chat.sender] = {
+            sender: chat.sender,
+            isGroupChat: chat.isGroupChat,
+            oneToOneUsers: [],
+            groupUsers: [],
+          };
+        }
+    
+        // Merge oneToOneUsers
+        acc[chat.sender].oneToOneUsers.push(
+          ...(chat.Users[0]?.oneToOneUser.map((user) => ({
+            userName: user.User2,
+            latestMessage: user.latestMessage || null,
+          })) || [])
+        );
+    
+        // Merge groupUsers
+        acc[chat.sender].groupUsers.push(
+          ...(chat.Users[1]?.groupUsers.map((group) => ({
+            groupName: group.groupName,
+            userId: group.userId,
+            latestMessage: group.Message?.text || null,
+          })) || [])
+        );
+    
+        return acc;
+      }, {})
+    );
 
-    // If no chat is found, return a 404 error
-    if (!existingChat) {
-      return res.status(404).json({ message: "One-to-one chat not found." });
-    }
+    response.forEach((entry) => {
+      const seen = new Set();
+      entry.oneToOneUsers = entry.oneToOneUsers.filter((user) => {
+        const key = user.userName; // Use `userName` as a unique identifier
+        if (seen.has(key)) {
+          return false;
+        }
+        seen.add(key);
+        return true;
+      });
+    });
 
-    // Send the existing chat as the response
-    return res.status(200).json(existingChat);
+    console.log(response);
 
+    return res.status(200).json(response);
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching users with latest messages:", error);
     return res.status(500).json({ error: error.message });
   }
-};
+}
 
 
 //fetch chat by ID

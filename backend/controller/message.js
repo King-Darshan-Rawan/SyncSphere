@@ -18,13 +18,20 @@ const sendMessage = async (req, res) => {
       text: text,
     });
 
+    console.log(newMessage);
+
 
 
     // Find the chat and update it with the new message reference
     const updatedChat = await Chat.findByIdAndUpdate(
       chatId,
       {
+        $set: {
+          // "Users.0.oneToOneUser.$[elem].Message": newMessage._id,
+          "Users.0.oneToOneUser.$[elem].latestMessage": newMessage.text,
+        },
         $push: {
+          // "Users.0.oneToOneUser.$[elem].latestMessage": newMessage.text,
           "Users.0.oneToOneUser.$[elem].Message": newMessage._id,
         },
       },
