@@ -124,7 +124,7 @@ const addToGroup = async (req, res) => {
   }
 };
 
-export {
+export{
   createChat,
   fetchChat,
   createGroupChat,

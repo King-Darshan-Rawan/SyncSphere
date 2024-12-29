@@ -5,7 +5,7 @@ import { FaMicrophoneAlt } from "react-icons/fa";
 import axios from "axios";
 import { io } from "socket.io-client";
 import ChatList from "./ChatList";
-import accessChat from "./../../../../../backend/controller/chat"
+// import accessChat from "./../../../../../backend/controller/chat"
 const socket = io("http://localhost:3000"); // Adjust to your backend socket URL
 
 // Chat Section (Right Side)

@@ -1,46 +1,55 @@
 // Socket.IO functionality
-import {Message} from "../models/message.js"
+import { Message } from "../models/message.js";
 
 export const socketHandler = (io) => {
+  io.on("connection", (socket) => {
+    console.log(`✅ User connected: ${socket.id}`);
 
-// let chats = {}; // In-memory storage for chats
+    // 📌 Join a chat room
+    socket.on("joinRoom", (chatId) => {
+      socket.join(chatId);
+      console.log(`🔗 User ${socket.id} joined room ${chatId}`);
+    });
 
-io.on("connection", (socket) => {
-  console.log(`User connected: ${socket.id}`);
-
-  // Join a room
-  socket.on("joinRoom", (chatId) => {
-    socket.join(chatId);
-    console.log(`User ${socket.id} joined room ${chatId}`);
-  });
-
-  // Handle sending messages
-  socket.on("sendMessage", async ({ chatId, senderId, text }) => {
-    try{
+    // 📌 Handle sending messages
+    socket.on("sendMessage", async ({ chatId, senderId, text }, callback) => {
+      try {
+        // Save the message to the database
         const newMessage = await Message.create({
-            chatId: chatId,
-            senderId: senderId,
-            text: text,
-    })
+          chatId: chatId,
+          senderId: senderId,
+          text: text,
+        });
 
-    io.to(chatId).emit("receiveMessage", newMessage);
+        // Emit the message to all users in the chat room
+        io.to(chatId).emit("receiveMessage", newMessage);
+        console.log("📤 Message saved to DB and emitted:", newMessage);
 
-    console.log("Message saved to db:", newMessage);
+        // Acknowledge the sender
+        if (callback) {
+          callback({
+            status: "success",
+            message: "Message sent successfully",
+            data: newMessage,
+          });
+        }
+      } catch (error) {
+        console.error("❌ Error saving message:", error.message);
 
+        // Send error acknowledgment to the sender
+        if (callback) {
+          callback({
+            status: "error",
+            message: "Failed to send the message",
+            error: error.message,
+          });
+        }
+      }
+    });
 
-    // const message = { sender, text, timestamp: new Date() };
-    // if (!chats[chatId]) chats[chatId] = [];
-    // chats[chatId].push(message);
-
-    // Emit message to everyone in the room
-    }catch(error){
-        console.error("Error saving message:", error);
-    }
-
-  // Disconnect
-  socket.on("disconnect", () => {
-    console.log(`User disconnected: ${socket.id}`);
+    // 📌 Handle user disconnect
+    socket.on("disconnect", () => {
+      console.log(`❌ User disconnected: ${socket.id}`);
+    });
   });
-});
-})
-}
+};
