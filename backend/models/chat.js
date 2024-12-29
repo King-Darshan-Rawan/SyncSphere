@@ -16,15 +16,33 @@ const ChatSchema = new mongoose.Schema({
     // For one-on-one chats, store userId strings directly
     oneToOneUsers: [
         {
-            type: String, // userId as a string (e.g., "Antairo")
-            required: false,
+            secondUser :[{
+                type: String,
+                required: false
+            },{
+                latestMessage: {
+                         type: mongoose.Schema.Types.ObjectId,
+                         ref: "Message",
+                },
+            }  
+            ]
+        },
+        {
+
         }
     ],
 
-    latestMessage: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Message",
-    },
+    // oneToOneUsers: [
+    //     {
+    //         type: String, // userId as a string (e.g., "Antairo")
+    //         required: false,
+    //     }
+    // ],
+
+    // latestMessage: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "Message",
+    // },
 
     GroupAdmin: {
         type: mongoose.Schema.Types.ObjectId,
@@ -36,4 +54,4 @@ const ChatSchema = new mongoose.Schema({
 
 const Chat = mongoose.model("Chat", ChatSchema);
 
-export default { Chat };
+export { Chat };
