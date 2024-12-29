@@ -9,6 +9,7 @@ import { Server } from "socket.io";
 // Database URL (move to .env file for security)
 const DB_URL = process.env.MONGO_ATLAS_WEB || "mongodb+srv://aniketdekate1:AniketDarshanWebProject@cluster0.bd4kn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
+
 // Initialize app and server
 const app = express();
 const server = createServer(app);

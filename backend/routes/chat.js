@@ -4,8 +4,8 @@
 import express from "express";
 const router = express.Router();
 
-router.route("/createChat")
-.post(createChat)
+router.post('/chat/createChat', createChat);
+
 
 router.route("/fetchChat")
 .get(fetchChat)

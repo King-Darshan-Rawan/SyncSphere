@@ -5,6 +5,8 @@ import { FaMicrophoneAlt } from "react-icons/fa";
 import axios from "axios";
 import { io } from "socket.io-client";
 import ChatList from "./ChatList";
+// Decode the token (use a library like jwt-decode)
+import {jwtDecode} from "jwt-decode";
 // import {accessChat} from "./../../../../../backend/controller/chat"
 const socket = io("http://localhost:3001"); // Adjust to your backend socket URL
 
@@ -117,7 +119,15 @@ const ChatPage = () => {
   const [chat, setChat] = useState(null); // Stores chat object
   const [userChats, setUserChats] = useState([]); // Stores all chats for the user
 
-  const loggedInUserId = "Antairo"; // Replace with actual logged-in userId
+  // Assuming the token is stored in localStorage
+  
+  const token = localStorage.getItem("token");
+  let loggedInUserId;
+  if (token) {
+    const decoded = jwtDecode(token);
+    loggedInUserId = decoded.userId; // Adjust key based on your JWT payload
+  }
+  
 
   // ✅ Fetch all chats when the page loads
   useEffect(() => {
@@ -159,49 +169,52 @@ useEffect(() => {
     };
   }, []);
 
-
+//send message 
   useEffect(() => {
     const messageListener = (newMessage) => {
       console.log("📩 New message received:", newMessage);
       setChatMessages((prevMessages) => [...prevMessages, newMessage]);
     };
-    socket.on("message received", messageListener);
+  
+    socket.on("messageReceived", messageListener);
   
     return () => {
-      socket.off("message received", messageListener);
+      socket.off("messageReceived", messageListener);
     };
   }, []);
+  
   
   
   // ✅ Handle user selection and chat access/creation
   const handleUserClick = async (user) => {
     setSelectedUser(user);
-
+  
     try {
-      console.log(`📡 Fetching/Creating chat with ${user.id}`);
-
       const response = await axios.post("http://localhost:3001/chat/createChat", {
         loggedInUserId,
         userId: user.id,
       });
-
+  
       const chatData = response.data;
       console.log("✅ Chat Data:", chatData);
-
+  
       setChat(chatData); // Set chat object
-      setChatMessages([
-        { id: 1, text: `Hi, ${user.name}!`, sender: "them" },
-        { id: 2, text: "Hello!", sender: "me" },
-      ]);
-
-      socket.emit("join chat", chatData._id); // Join the selected chat room
     } catch (error) {
       console.error("❌ Error accessing or creating chat:", error.response?.data || error.message);
+      setChat(null); // Reset chat object
+      alert("Failed to create or access chat.");
     }
   };
+  
 
   // ✅ Handle sending messages
   const handleSendMessage = async (text) => {
+    if (!chat || !chat._id) {
+      console.error("❌ Chat is not initialized");
+      alert("Please select or create a chat first.");
+      return;
+    }
+  
     try {
       const newMessage = {
         chatId: chat._id,
@@ -209,23 +222,20 @@ useEffect(() => {
         text,
       };
   
-      // Emit the message via socket with a callback
-      socket.emit("sendMessage", newMessage, (response) => {
-        if (response.status === "success") {
-          console.log("📤 Message sent acknowledgment:", response);
-          setChatMessages((prevMessages) => [
-            ...prevMessages,
-            { id: prevMessages.length + 1, text, sender: "me" },
-          ]);
-        } else {
-          console.error("❌ Message send error:", response.message);
-          alert("Failed to send message. Please try again.");
-        }
-      });
+      // Emit the message via socket or API
+      socket.emit("send message", newMessage);
+  
+      setChatMessages((prevMessages) => [
+        ...prevMessages,
+        { id: prevMessages.length + 1, text, sender: "me" },
+      ]);
     } catch (error) {
       console.error("❌ Error sending message:", error.response?.data || error.message);
+      alert("Failed to send the message.");
     }
   };
+  
+  
   
 
   return (

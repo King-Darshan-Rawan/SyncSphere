@@ -22,45 +22,29 @@ export default function SignIn() {
   const navigate = useNavigate(); // For navigation
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    try {
-      // Make API call to login
-      const response = await axios.post("http://localhost:3000/users/login", {
-        userConfirm,
-        password,
-      });
-  
-      // Extract token from response
-      const { token } = response.data;
-  
-      if (!token) {
-        throw new Error("No token received. Please try again.");
-      }
-  
-      // Store token in localStorage
-      localStorage.setItem("token", token);
-  
-      // Decode token to get user info (if needed)
-      // Uncomment the next lines if you need user info from the token
-      // const decoded = jwtDecode(token);
-      // console.log("User decoded from token:", decoded);
-  
-      // Navigate to chat page after successful login
-      navigate("/chat");
-    } catch (err) {
-      if (err.response) {
-        // Backend error
-        const { error, message } = err.response.data;
-        console.error(`Login failed: ${error} - ${message}`);
-        setError(message || "An error occurred during login.");
-      } else {
-        // Network or other error
-        console.error("Network or server error", err);
-        setError("Unable to connect to the server. Please try again later.");
-      }
+  e.preventDefault();
+
+  try {
+    const response = await axios.post("http://localhost:3001/users/login", {
+      userConfirm,
+      password,
+    });
+
+    const { token, userId } = response.data; // Ensure the server sends `userId` in response
+    if (!token || !userId) {
+      throw new Error("Missing token or userId in response");
     }
-  };
+
+    localStorage.setItem("token", token); // Save the token
+    localStorage.setItem("userId", userId); // Save the userId
+
+    navigate("/chat");
+  } catch (err) {
+    console.error("Login error:", err);
+    setError("Failed to log in. Please try again.");
+  }
+};
+
   
 
   return (

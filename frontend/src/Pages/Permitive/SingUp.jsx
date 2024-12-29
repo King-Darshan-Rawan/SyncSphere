@@ -21,14 +21,17 @@ export default function SignUp() {
   const navigate = useNavigate();
   const handleSubmit = (e) => {
     e.preventDefault();
-  
-    fetch("http://localhost:3000/users/register", {
+    
+    localStorage.setItem("userId", userName)
+    fetch("http://localhost:3001/users/register", {
       method: "POST",
       headers: {
         "Content-type": "application/json",
       },
       body: JSON.stringify({ firstName, lastName, email, userName, password }),
-    })
+      
+    }
+  )
       .then((response) => {
         if (!response.ok) {
           // Throw an error if the response status is not OK

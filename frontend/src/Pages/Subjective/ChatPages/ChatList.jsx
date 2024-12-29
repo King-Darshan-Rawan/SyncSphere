@@ -33,13 +33,18 @@ const ChatList = ({ onOpenChat }) => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get(`http://localhost:3001/users`);
-        setUsers(response.data); // Store initial users
-        setFilteredUsers(response.data); // Display initial users
+        setUsers(response.data);
+        setFilteredUsers(response.data);
       } catch (error) {
-        console.error("Error fetching initial users: ", error);
+        if (error.response && error.response.status === 404) {
+          console.error("API endpoint not found: 404", error);
+          alert("Users API endpoint not found. Please check your server configuration.");
+        } else {
+          console.error("Error fetching initial users:", error);
+        }
       }
     };
-
+    
     fetchUsers();
   }, []);
 

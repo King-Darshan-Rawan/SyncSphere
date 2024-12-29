@@ -12,32 +12,43 @@ const createChat = async (req, res) => {
   }
 
   try {
-    let chat = await Chat.findOne({
+    // Check if a one-to-one chat already exists
+    const existingChat = await Chat.findOne({
       isGroupChat: false,
-      oneToOneUsers: { $all: [userId, loggedInUserId] },
-    })
-      .populate("latestMessage")
-      .populate("oneToOneUsers", "userId name profilePic");
+      "Users.oneToOneUser": { $elemMatch: { $all: [userId, loggedInUserId] } },
+    }).populate("Users.oneToOneUser.Message", "text senderId chatId");
 
-    if (!chat) {
-      console.log("💬 No existing chat found, creating a new one...");
-
-      chat = await Chat.create({
-        chatName: "One-on-One Chat",
-        isGroupChat: false,
-        oneToOneUsers: [userId, loggedInUserId],
-      });
-
-      chat = await chat.populate("oneToOneUsers", "userId name profilePic");
+    if (existingChat) {
+      console.log("✅ Existing chat found:", existingChat);
+      return res.status(200).json(existingChat);
     }
 
-    console.log("✅ Chat successfully created or retrieved:", chat);
-    res.status(200).json(chat);
+    console.log("💬 No existing chat found, creating a new one...");
+
+    // Create a new chat document
+    const newChat = new Chat({
+      isGroupChat: false,
+      Users: [
+        {
+          oneToOneUser: [userId, loggedInUserId], // Pass only the user IDs as strings
+        },
+      ],
+    });
+
+    const savedChat = await newChat.save();
+
+    console.log("✅ Chat successfully created:", savedChat);
+    res.status(200).json(savedChat);
   } catch (err) {
     console.error("❌ Server error while accessing/creating chat:", err.message);
-    res.status(500).json({ msg: "Server error while accessing/creating chat", error: err.message });
+    res.status(500).json({
+      msg: "Server error while accessing/creating chat",
+      error: err.message,
+    });
   }
 };
+
+
 
 
 // Fetch all chats for a user

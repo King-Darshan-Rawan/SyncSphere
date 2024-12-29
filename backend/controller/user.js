@@ -14,7 +14,7 @@ const register = async (req, res) => {
   try {
     let check = await User.findOne({ userId: userName });
     if (check) {
-      res.status(400).json({ msg: "This username already exists" });
+      return res.status(400).json({ msg: "This username already exists" });
     } else {
       const hashpass = await bcrypt.hash(password, 10);
       const insert_data = await User.insertMany({
@@ -23,18 +23,28 @@ const register = async (req, res) => {
         password: hashpass,
         userId: userName,
       });
-      res.status(200).json({
-        msg: "User registered",
-        _id: insert_data[0]._id,
+
+      // Generate token after registration
+      const token = jwt.sign({ username: userName }, SECRET_KEY, {
+        expiresIn: "3h",
+      });
+
+      res.status(201).json({
+        msg: "User registered successfully",
+        userId: insert_data[0]._id,
         userName,
         email,
+        token, // Add token here
       });
     }
   } catch (err) {
-    res.status(400).json(err);
+    console.error("Error during registration:", err);
+    res.status(500).json({ error: "SERVER_ERROR", msg: "Registration failed." });
   }
 };
 
+
+// User login
 // User login
 const login = async (req, res) => {
   const { userConfirm, password } = req.body;
@@ -74,7 +84,11 @@ const login = async (req, res) => {
     });
 
     console.log("User has logged in successfully");
-    return res.status(200).json({ token });
+    return res.status(200).json({
+      msg: "Login successful",
+      token,
+      userId: user._id, // Include userId in response
+    });
   } catch (err) {
     console.error("Server error during login:", err);
     return res.status(500).json({
@@ -83,6 +97,7 @@ const login = async (req, res) => {
     });
   }
 };
+
 
 // Search users
 const search = async (req, res) => {
