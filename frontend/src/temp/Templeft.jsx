@@ -3,13 +3,13 @@ import axios from "axios";
 import { IoMdAdd } from "react-icons/io";
 import { GoDeviceCameraVideo } from "react-icons/go";
 import {
-  accessChat,
+  createChat,
   fetchChat,
   createGroupChat,
   renameGroup,
   removeFromGroup,
-  addtoGroup,
-} from "../../../../../backend/controller/chat";
+  
+} from "../../../backend/controller/chat"
 
 
 

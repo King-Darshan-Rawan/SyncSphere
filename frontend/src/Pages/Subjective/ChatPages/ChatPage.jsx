@@ -5,7 +5,7 @@ import { FaMicrophoneAlt } from "react-icons/fa";
 import axios from "axios";
 import { io } from "socket.io-client";
 import ChatList from "./ChatList";
-
+import accessChat from "./../../../../../backend/controller/chat"
 const socket = io("http://localhost:3000"); // Adjust to your backend socket URL
 
 // Chat Section (Right Side)
@@ -208,19 +208,25 @@ useEffect(() => {
         sender: loggedInUserId,
         text,
       };
-
-      // Emit the message via socket
-      socket.emit("send message", newMessage);
-
-      // Update local state
-      setChatMessages((prevMessages) => [
-        ...prevMessages,
-        { id: prevMessages.length + 1, text, sender: "me" },
-      ]);
+  
+      // Emit the message via socket with a callback
+      socket.emit("sendMessage", newMessage, (response) => {
+        if (response.status === "success") {
+          console.log("📤 Message sent acknowledgment:", response);
+          setChatMessages((prevMessages) => [
+            ...prevMessages,
+            { id: prevMessages.length + 1, text, sender: "me" },
+          ]);
+        } else {
+          console.error("❌ Message send error:", response.message);
+          alert("Failed to send message. Please try again.");
+        }
+      });
     } catch (error) {
       console.error("❌ Error sending message:", error.response?.data || error.message);
     }
   };
+  
 
   return (
     <div className="chat-page">
