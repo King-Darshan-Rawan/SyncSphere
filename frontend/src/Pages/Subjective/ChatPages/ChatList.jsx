@@ -14,7 +14,7 @@ const ChatList = ({ onOpenChat }) => {
   const searchUsers = async (searchQuery) => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/users/search?search=${searchQuery}`
+        `http://localhost:3001/users/search?search=${searchQuery}`
       );
       setSearchedUsers(response.data); // Store searched users
       setFilteredUsers(response.data); // Update filtered users
@@ -32,7 +32,7 @@ const ChatList = ({ onOpenChat }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/users`);
+        const response = await axios.get(`http://localhost:3001/users`);
         setUsers(response.data); // Store initial users
         setFilteredUsers(response.data); // Display initial users
       } catch (error) {
@@ -61,7 +61,7 @@ const ChatList = ({ onOpenChat }) => {
         userId,
       });
 
-      const response = await axios.post("http://localhost:3000/chat/createChat", {
+      const response = await axios.post("http://localhost:3001/chat/createChat", {
         loggedInUserId,
         userId,
       });

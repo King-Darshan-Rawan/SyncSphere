@@ -4,7 +4,10 @@ import { Chat } from "../models/chat.js";
 const createChat = async (req, res) => {
   const { loggedInUserId, userId } = req.body;
 
+  console.log("📝 Create Chat Request Received:", { loggedInUserId, userId });
+
   if (!userId || !loggedInUserId) {
+    console.error("❌ Invalid user data:", { loggedInUserId, userId });
     return res.status(400).json({ msg: "Invalid user data" });
   }
 
@@ -14,9 +17,11 @@ const createChat = async (req, res) => {
       oneToOneUsers: { $all: [userId, loggedInUserId] },
     })
       .populate("latestMessage")
-      .populate("oneToOneUsers", "userId name profilePic"); // Populate relevant user fields
+      .populate("oneToOneUsers", "userId name profilePic");
 
     if (!chat) {
+      console.log("💬 No existing chat found, creating a new one...");
+
       chat = await Chat.create({
         chatName: "One-on-One Chat",
         isGroupChat: false,
@@ -26,11 +31,14 @@ const createChat = async (req, res) => {
       chat = await chat.populate("oneToOneUsers", "userId name profilePic");
     }
 
+    console.log("✅ Chat successfully created or retrieved:", chat);
     res.status(200).json(chat);
   } catch (err) {
-    res.status(500).json({ msg: "Server error while accessing/creating chat" });
+    console.error("❌ Server error while accessing/creating chat:", err.message);
+    res.status(500).json({ msg: "Server error while accessing/creating chat", error: err.message });
   }
 };
+
 
 // Fetch all chats for a user
 const fetchChat = async (req, res) => {

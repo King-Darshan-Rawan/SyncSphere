@@ -6,7 +6,7 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import ChatList from "./ChatList";
 // import {accessChat} from "./../../../../../backend/controller/chat"
-const socket = io("http://localhost:3000"); // Adjust to your backend socket URL
+const socket = io("http://localhost:3001"); // Adjust to your backend socket URL
 
 // Chat Section (Right Side)
 const ChatSection = ({
@@ -124,7 +124,7 @@ const ChatPage = () => {
     const fetchUserChats = async () => {
       try {
         console.log("📡 Fetching user chats...");
-        const response = await axios.post("http://localhost:3000/chat/fetchChat", {
+        const response = await axios.post("http://localhost:3001/chat/fetchChat", {
           loggedInUserId,
         });
         console.log("✅ User Chats Fetched:", response.data);
@@ -180,7 +180,7 @@ useEffect(() => {
     try {
       console.log(`📡 Fetching/Creating chat with ${user.id}`);
 
-      const response = await axios.post("http://localhost:3000/chat/createChat", {
+      const response = await axios.post("http://localhost:3001/chat/createChat", {
         loggedInUserId,
         userId: user.id,
       });
