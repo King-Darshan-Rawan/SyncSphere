@@ -1,134 +1,192 @@
 import { Chat } from "../models/chat.js";
 
 // Create one-on-one chat if it doesn't exist
-const createChat = async (req, res) => {
-  const { loggedInUserId, userId } = req.body;
+const createOneToOneChat = async (req, res) => {
+  
+    const { sender, receiver } = req.body;
+    try {
 
-  if (!userId || !loggedInUserId) {
-    return res.status(400).json({ msg: "Invalid user data" });
-  }
+    if (!sender || !receiver) {
+      return res.status(400).json({ error: "Sender and receiver must be provided." });
+    }
 
-  try {
-    let chat = await Chat.findOne({
+    console.log(sender , receiver);
+
+    const existingChat = await Chat.findOne({
       isGroupChat: false,
-      oneToOneUsers: { $all: [userId, loggedInUserId] },
-    })
-      .populate("latestMessage")
-      .populate("oneToOneUsers", "userId name profilePic"); // Populate relevant user fields
+      sender
+      // ,"Users.oneToOneUser.type": receiver,
+    });
 
-    if (!chat) {
-      chat = await Chat.create({
-        chatName: "One-on-One Chat",
+    console.log(existingChat);
+
+    if (existingChat) {
+  
+      const existingChatwithUser2 = await Chat.findOne({
         isGroupChat: false,
-        oneToOneUsers: [userId, loggedInUserId],
+        sender:sender,
+        "Users.oneToOneUser.User2": receiver,
+        // Users:[{oneToOneUser:[{User2:receiver}]}],
       });
 
-      chat = await chat.populate("oneToOneUsers", "userId name profilePic");
+      console.log(existingChatwithUser2);
+
+      if(existingChatwithUser2){
+        return res.status(200).json(existingChat);
+      }
+      console.log("3");
+      const createOnetoOne = await Chat.findOneAndUpdate(
+      { sender: sender, isGroupChat: false },
+      { $push: { "Users.0.oneToOneUser": { User2: receiver } } },
+      // { new: true, runValidators: true }
+      )
+      console.log(createOnetoOne);
+      res.status(200).json(createOnetoOne);
+    }
+
+    console.log("new");
+
+    const newChat = await Chat.insertMany({
+      sender : sender,
+      Users: [{ oneToOneUser: [{ User2:receiver }] }],
+    });
+    console.log(newChat);
+
+    // const savedChat = await newChat.save();
+    res.status(201).json(newChat);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Fetch one to one chats for a user
+const fetchOneToOneChats = async (req, res) => {
+  try {
+    const { userId } = req.query;
+
+    const oneToOneChats = await Chat.find({
+      isGroupChat: false,
+      "Users.oneToOneUser": userId,
+    }).populate("Users.oneToOneUser.Message");
+
+    res.status(200).json(oneToOneChats);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+//fetch chat by ID
+const fetchChatById = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const chat = await Chat.findById(chatId).populate("Users.oneToOneUser.Message").populate("Users.groupUsers.Message");
+
+    if (!chat) {
+      return res.status(404).json({ error: "Chat not found" });
     }
 
     res.status(200).json(chat);
-  } catch (err) {
-    res.status(500).json({ msg: "Server error while accessing/creating chat" });
-  }
-};
-
-// Fetch all chats for a user
-const fetchChat = async (req, res) => {
-  const { loggedInUserId } = req.body;
-
-  if (!loggedInUserId) {
-    return res.status(400).json({ msg: "User ID is required to fetch chats." });
-  }
-
-  try {
-    const chats = await Chat.find({
-      oneToOneUsers: { $in: [loggedInUserId] },
-    })
-      .populate("oneToOneUsers", "userId name profilePic") // Populate user details
-      .populate("latestMessage");
-
-    res.status(200).json(chats);
   } catch (error) {
-    console.error("Error fetching chats:", error.message);
-    res.status(500).json({ msg: "Server error while fetching chats" });
+    res.status(500).json({ error: error.message });
   }
 };
-
 // Create group chat
 const createGroupChat = async (req, res) => {
-  const { groupName, users, loggedInUserId } = req.body;
-
   try {
-    const groupChat = await Chat.create({
-      chatName: "Group Chat",
-      groupName: groupName,
+    const { groupName, users } = req.body;
+
+    if (!groupName || !users || users.length < 2) {
+      return res.status(400).json({ error: "Group must have a name and at least 2 members." });
+    }
+
+    const newGroupChat = new Chat({
       isGroupChat: true,
-      users: [...users, loggedInUserId],
-      groupAdmin: loggedInUserId,
+      Users: [{ groupUsers: users.map((user) => ({ type: user, groupName })) }],
     });
 
-    res.status(201).json(groupChat);
+    const savedGroupChat = await newGroupChat.save();
+    res.status(201).json(savedGroupChat);
   } catch (error) {
-    res.status(400).json({ msg: "Error in creating group chat" });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Rename a group chat
-const renameGroup = async (req, res) => {
-  const { chatId, chatName } = req.body;
-
+//fetch group chat 
+const fetchGroupChats = async (req, res) => {
   try {
-    const chat = await Chat.findByIdAndUpdate(
-      chatId,
-      { groupName: chatName },
-      { new: true }
-    );
-
-    res.status(200).json(chat);
+    const groupChats = await Chat.find({ isGroupChat: true }).populate("Users.groupUsers.Message");
+    res.status(200).json(groupChats);
   } catch (error) {
-    res.status(400).json({ msg: "Error in renaming the group" });
+    res.status(500).json({ error: error.message });
   }
 };
+
+// // Rename a group chat
+// const renameGroup = async (req, res) => {
+//   const { chatId, chatName } = req.body;
+
+//   try {
+//     const chat = await Chat.findByIdAndUpdate(
+//       chatId,
+//       { groupName: chatName },
+//       { new: true }
+//     );
+
+//     res.status(200).json(chat);
+//   } catch (error) {
+//     res.status(400).json({ msg: "Error in renaming the group" });
+//   }
+// };
 
 // Remove a user from a group
-const removeFromGroup = async (req, res) => {
-  const { chatId, userToBeRemoved } = req.body;
-
+const removeUserFromGroup = async (req, res) => {
   try {
-    const chat = await Chat.findByIdAndUpdate(
-      chatId,
-      { $pull: { users: userToBeRemoved } },
-      { new: true }
-    );
+    const { chatId, userId } = req.body;
 
-    res.status(200).json(chat);
+    const updatedGroupChat = await Chat.findByIdAndUpdate(
+      chatId,
+      { $pull: { "Users.groupUsers": { type: userId } } },
+      { new: true }
+    ).populate("Users.groupUsers.Message");
+
+    if (!updatedGroupChat) {
+      return res.status(404).json({ error: "Group chat not found." });
+    }
+
+    res.status(200).json(updatedGroupChat);
   } catch (error) {
-    res.status(400).json({ msg: "Error in removing user from group" });
+    res.status(500).json({ error: error.message });
   }
 };
 
 // Add a user to a group
-const addToGroup = async (req, res) => {
-  const { chatId, newUser } = req.body;
-
+const addUserToGroup = async (req, res) => {
   try {
-    const chat = await Chat.findByIdAndUpdate(
-      chatId,
-      { $push: { users: newUser } },
-      { new: true }
-    ).populate("users", "userId name profilePic");
+    const { chatId, userId } = req.body;
 
-    res.status(200).json(chat);
+    const updatedGroupChat = await Chat.findByIdAndUpdate(
+      chatId,
+      { $addToSet: { "Users.groupUsers": { type: userId } } },
+      { new: true }
+    ).populate("Users.groupUsers.Message");
+
+    if (!updatedGroupChat) {
+      return res.status(404).json({ error: "Group chat not found." });
+    }
+
+    res.status(200).json(updatedGroupChat);
   } catch (error) {
-    res.status(400).json({ msg: "Error in adding user to group" });
+    res.status(500).json({ error: error.message });
   }
 };
 
 export{
-  createChat,
-  fetchChat,
   createGroupChat,
-  renameGroup,
-  removeFromGroup,
-  addToGroup,
+  createOneToOneChat,
+  fetchChatById,
+  fetchOneToOneChats,
+  fetchGroupChats,
+  addUserToGroup,
+  removeUserFromGroup
 };
