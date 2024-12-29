@@ -1,4 +1,4 @@
-import { Chat } from "../models/chat";
+import { Chat } from "./../models/chat";
 
 // Create one-on-one chat if it doesn't exist
 const createChat = async (req, res) => {

@@ -1,5 +1,5 @@
 
-  import { createChat, fetchChat, createGroupChat, renameGroup, removeFromGroup, addToGroup} from "./../controller/chat"
+  import { createChat, fetchChat, createGroupChat, renameGroup, removeFromGroup, addToGroup} from "../controller/chat"
 
 import express from "express";
 const router = express.Router();
