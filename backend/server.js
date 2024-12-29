@@ -5,13 +5,15 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";
+
 // Database URL (move to .env file for security)
 const DB_URL = process.env.MONGO_ATLAS_WEB || "mongodb+srv://aniketdekate1:AniketDarshanWebProject@cluster0.bd4kn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 // Initialize app and server
 const app = express();
 const server = createServer(app);
-const io = new Server(server, {
+
+const io =new Server(server, {
   cors: {
     origin: "*",
   },
@@ -26,12 +28,15 @@ import userRouter from "./routes/user.js";
 import workspaceRouter from "./routes/workspace.js";
 import chatRouter from "./routes/chat.js";
 import messageRouter  from './routes/message.js';
+import { socketHandler } from './socket/chatSocket.js';
 
 app.use("/users", userRouter);
 app.use("/workspace", workspaceRouter);
 app.use("/chat" , chatRouter);
 app.use("/message" , messageRouter);
 // Connect to MongoDB
+
+socketHandler(io);
 async function main() {
   try {
     await mongoose.connect(DB_URL);
