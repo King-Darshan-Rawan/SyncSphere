@@ -1,53 +1,34 @@
 import mongoose from "mongoose";
 
 const ChatSchema = new mongoose.Schema({
-    chatName: { type: String, trim: true },
+    // chatName: { type: String, trim: true },
     isGroupChat: { type: Boolean, default: false },
-    groupName: { type: String, default: null },
-
-    // Users participating in the chat (Referencing by _id)
-    users: [
+    Users: [
         {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-        }
-    ],
-
-    // For one-on-one chats, store userId strings directly
-    oneToOneUsers: [
-        {
-            secondUser :[{
+            oneToOneUser :[{
                 type: String,
-                required: false
-            },{
-                latestMessage: {
+                required: false,
+                Message: {
                          type: mongoose.Schema.Types.ObjectId,
                          ref: "Message",
-                },
-            }  
-            ]
+                }, 
+        }]
         },
         {
-
+            groupUsers :[{
+                groupName: {
+                    type: String, 
+                    default: null 
+                },
+                type: String,
+                required: false,
+                Message: {
+                             type: mongoose.Schema.Types.ObjectId,
+                             ref: "Message",
+                },
+        }]
         }
     ],
-
-    // oneToOneUsers: [
-    //     {
-    //         type: String, // userId as a string (e.g., "Antairo")
-    //         required: false,
-    //     }
-    // ],
-
-    // latestMessage: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: "Message",
-    // },
-
-    GroupAdmin: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-    },
 }, {
     timestamps: true,
 });
