@@ -1,0 +1,769 @@
+in src there is a folder Pages,that contain folders 
+3. subjective = a)ChatPages b) MeetPages
+
+file1:import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { IoMdAdd } from "react-icons/io";
+import { GoDeviceCameraVideo } from "react-icons/go";
+import {
+  createChat,
+  fetchChat,
+  createGroupChat,
+  renameGroup,
+  removeFromGroup,
+  addToGroup,
+} from "../../../../../backend/controller/chat";
+
+
+
+const ChatList = ({ onOpenChat }) => {
+  const [users, setUsers] = useState([]); // Full list of users
+  const [filteredUsers, setFilteredUsers] = useState([]); // Filtered users
+  const [searchedUsers, setSearchedUsers] = useState([]); // Users from API search
+  const [searchTerm, setSearchTerm] = useState(""); // Search term
+  const loggedInUserId = "currentLoggedInUserId"; // Replace with actual logged-in user ID.
+
+  // Fetch users from API based on search
+  const searchUsers = async (searchQuery) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/users/search?search=${searchQuery}`
+      );
+      setSearchedUsers(response.data); // Store searched users
+      setFilteredUsers(response.data); // Update filtered users
+    } catch (error) {
+      console.error("Error fetching users: ", error);
+    }
+  };
+
+  // Handle search term changes
+  const onSearchChange = (query) => {
+    setSearchTerm(query);
+  };
+
+  // Fetch initial user list on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/users`);
+        setUsers(response.data); // Store initial users
+        setFilteredUsers(response.data); // Display initial users
+      } catch (error) {
+        console.error("Error fetching initial users: ", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // Trigger search when searchTerm changes
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setSearchedUsers([]); // Clear searched users
+      setFilteredUsers(users); // Reset to full user list
+    } else {
+      searchUsers(searchTerm.trim());
+    }
+  }, [searchTerm, users]);
+
+  // Handle chat creation
+  const createChat = async (userId, userName) => {
+    try {
+      console.log("Sending request to backend with:", {
+        loggedInUserId,
+        userId,
+      });
+  
+      const response = await axios.post("http://localhost:3000/chat/accessChat", {
+        loggedInUserId,
+        userId,
+      });
+  
+      console.log("Chat created successfully:", response.data);
+  
+      // Open chat interface in ChatPage
+      if (onOpenChat) {
+        onOpenChat({ id: userId, name: userName });
+      }
+    } catch (error) {
+      console.error(
+        "Error creating chat:",
+        error.response?.data || error.message
+      );
+      alert("Failed to access chat. Please try again.");
+    }
+  };
+  
+  
+
+  return (
+    <div className="chat-list">
+      {/* Search Bar */}
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+        />
+      </div>
+
+      {/* User List */}
+      <div className="user-list">
+        {searchedUsers.length > 0
+          ? searchedUsers.map((user) => (
+              <div key={user.id} className="user-item">
+                <div className="user-info">
+                  <img
+                    src={user.profilePic || "default-avatar.png"}
+                    alt={`${user.name || "Unknown User"}'s profile`}
+                    className="user-pic"
+                  />
+                  <span>{user.name || user.userId || "Unnamed User"}</span>
+                </div>
+                <button
+  className="action-btn"
+  onClick={() => {
+    console.log("Creating chat with user:", user);
+if (user?.userId) {
+  createChat(user.userId, user.name || user.userId);
+} else {
+  console.error("Error: userId is missing or undefined for:", user);
+}
+
+  }}
+  
+>
+  <IoMdAdd />
+</button>
+
+              </div>
+            ))
+          : filteredUsers.map((user) => (
+              <div key={user.id} className="user-item">
+                <div className="user-info">
+                  <img
+                    src={user.profilePic || "default-avatar.png"}
+                    alt={`${user.name || "Unknown User"}'s profile`}
+                    className="user-pic"
+                  />
+                  <span>{user.name || user.userId || "Unknown User"}</span>
+                </div>
+                <button className="video-call-btn">
+                  <GoDeviceCameraVideo />
+                </button>
+              </div>
+            ))}
+      </div>
+
+      {/* Footer Buttons */}
+      <div className="chat-list-footer">
+        <button className="join-button bottom-spc">Join Team</button>
+        <button className="create-button bottom-spc">Create Team</button>
+      </div>
+    </div>
+  );
+};
+
+export default ChatList;
+
+
+import React, { useEffect, useState } from "react";
+import "./ChatPage.css";
+import { GoMoveToEnd, GoMoveToStart } from "react-icons/go";
+import { FaMicrophoneAlt } from "react-icons/fa";
+import axios from "axios";
+import { io } from "socket.io-client";
+import ChatList from "./ChatList";
+import accessChat from "./../../../../../backend/controller/chat"
+const socket = io("http://localhost:3000"); // Adjust to your backend socket URL
+
+// Chat Section (Right Side)
+const ChatSection = ({
+  selectedUser,
+  chatMessages,
+  onSendMessage,
+  onVoiceMessage,
+}) => {
+  const [messageText, setMessageText] = useState("");
+
+  const handleSend = () => {
+    if (messageText.trim()) {
+      onSendMessage(messageText);
+      setMessageText("");
+    }
+  };
+
+  return (
+    <div className="chat-section">
+      {selectedUser ? (
+        <>
+          <div className="chat-header">Chatting with: {selectedUser.name}</div>
+          <div className="chat-messages">
+            {chatMessages.map((msg, index) => (
+              <div
+                key={index}
+                className={`chat-message ${
+                  msg.sender === "me" ? "sent" : "received"
+                }`}
+              >
+                {msg.text}
+              </div>
+            ))}
+          </div>
+          <div className="chat-input">
+            <textarea
+              placeholder="Type a message..."
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+            ></textarea>
+            <button
+              className="record-button"
+              onClick={() => onVoiceMessage("Voice message attached!")}
+            >
+              <FaMicrophoneAlt />
+            </button>
+            <button className="send-button" onClick={handleSend}>
+              Send
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="no-chat">Select a user to start chatting</div>
+      )}
+    </div>
+  );
+};
+
+// Task and Team Sidebar (Right Bottom)
+const TaskTeam = () => {
+  const [sidebar, setSidebar] = useState(true);
+  const [isActive, setIsActive] = useState(true);
+
+  const toggleSidebar = () => {
+    setSidebar(!sidebar);
+    setIsActive(!isActive);
+  };
+
+  return (
+    <div className="chatmain-container">
+      <div className="hider-container">
+        <button
+          onClick={toggleSidebar}
+          className={`hider ${sidebar ? "sidebar-open" : "sidebar-closed"}`}
+        >
+          {sidebar ? <GoMoveToEnd /> : <GoMoveToStart />}
+        </button>
+      </div>
+      <div
+        className={`task-team ${
+          isActive ? "active-sidebar" : "inactive-sidebar"
+        }`}
+      >
+        <div className="team">
+          <div className="task-top">
+            <button className="join-button">Join Meet</button>
+            <button className="create-button">Create Meet</button>
+          </div>
+          <div className="head">
+            <p className="titel-sub-cont">Team</p>
+          </div>
+        </div>
+        <div className="task">
+          <div className="head">
+            <p className="titel-sub-cont">Task</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Main Chat Page
+const ChatPage = () => {
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chat, setChat] = useState(null); // Stores chat object
+  const [userChats, setUserChats] = useState([]); // Stores all chats for the user
+
+  const loggedInUserId = "Antairo"; // Replace with actual logged-in userId
+
+  // ✅ Fetch all chats when the page loads
+  useEffect(() => {
+    const fetchUserChats = async () => {
+      try {
+        console.log("📡 Fetching user chats...");
+        const response = await axios.post("http://localhost:3000/chat/fetchChat", {
+          loggedInUserId,
+        });
+        console.log("✅ User Chats Fetched:", response.data);
+        setUserChats(response.data);
+      } catch (error) {
+        console.error("❌ Error fetching chats:", error.response?.data || error.message);
+      }
+    };
+
+    fetchUserChats();
+  }, []);
+
+  // ✅ Join Chat Room with Socket.IO
+  // ✅ Join Chat Room with Socket.IO
+useEffect(() => {
+  if (chat?._id) {
+    socket.emit("join chat", chat._id);
+    console.log(`📡 Joined chat room: ${chat._id}`);
+  }
+}, [chat]);
+
+
+  // ✅ Listen for Incoming Messages
+  useEffect(() => {
+    socket.on("message received", (newMessage) => {
+      console.log("📩 New message received:", newMessage);
+      setChatMessages((prevMessages) => [...prevMessages, newMessage]);
+    });
+
+    return () => {
+      socket.off("message received");
+    };
+  }, []);
+
+
+  useEffect(() => {
+    const messageListener = (newMessage) => {
+      console.log("📩 New message received:", newMessage);
+      setChatMessages((prevMessages) => [...prevMessages, newMessage]);
+    };
+    socket.on("message received", messageListener);
+  
+    return () => {
+      socket.off("message received", messageListener);
+    };
+  }, []);
+  
+  
+  // ✅ Handle user selection and chat access/creation
+  const handleUserClick = async (user) => {
+    setSelectedUser(user);
+
+    try {
+      console.log(`📡 Fetching/Creating chat with ${user.id}`);
+
+      const response = await axios.post("http://localhost:3000/chat/createChat", {
+        loggedInUserId,
+        userId: user.id,
+      });
+
+      const chatData = response.data;
+      console.log("✅ Chat Data:", chatData);
+
+      setChat(chatData); // Set chat object
+      setChatMessages([
+        { id: 1, text: `Hi, ${user.name}!`, sender: "them" },
+        { id: 2, text: "Hello!", sender: "me" },
+      ]);
+
+      socket.emit("join chat", chatData._id); // Join the selected chat room
+    } catch (error) {
+      console.error("❌ Error accessing or creating chat:", error.response?.data || error.message);
+    }
+  };
+
+  // ✅ Handle sending messages
+  const handleSendMessage = async (text) => {
+    try {
+      const newMessage = {
+        chatId: chat._id,
+        sender: loggedInUserId,
+        text,
+      };
+
+      // Emit the message via socket
+      socket.emit("send message", newMessage);
+
+      // Update local state
+      setChatMessages((prevMessages) => [
+        ...prevMessages,
+        { id: prevMessages.length + 1, text, sender: "me" },
+      ]);
+    } catch (error) {
+      console.error("❌ Error sending message:", error.response?.data || error.message);
+    }
+  };
+
+  return (
+    <div className="chat-page">
+      {/* Left Sidebar (User List) */}
+      <ChatList
+        onOpenChat={handleUserClick}
+        chats={userChats}
+        loggedInUserId={loggedInUserId}
+      />
+
+      {/* Chat Section */}
+      <ChatSection
+        selectedUser={selectedUser}
+        chatMessages={chatMessages}
+        onSendMessage={handleSendMessage}
+        onVoiceMessage={(msg) => console.log(msg)}
+      />
+
+      {/* Task and Team Sidebar */}
+      <TaskTeam />
+    </div>
+  );
+};
+
+export default ChatPage;
+
+import React, { useState } from "react";
+ // Add this if you want styles specific to ChatSection
+
+const ChatSection = ({ selectedUser, chatMessages, onSendMessage, onVoiceMessage }) => {
+  const [messageText, setMessageText] = useState("");
+
+  const handleSend = () => {
+    if (messageText.trim()) {
+      onSendMessage(messageText);
+      setMessageText("");
+    }
+  };
+
+  return (
+    <div className="chat-section">
+      {selectedUser ? (
+        <>
+          <div className="chat-header">{selectedUser.name}</div>
+          <div className="chat-messages">
+            {chatMessages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`chat-message ${msg.sender === "me" ? "sent" : "received"}`}
+              >
+                {msg.text}
+              </div>
+            ))}
+          </div>
+          <div className="chat-input">
+            <textarea
+              placeholder="Type a message..."
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+            ></textarea>
+            <button className="record-button" onClick={() => onVoiceMessage("Voice message attached!")}>
+              🎤
+            </button>
+            <button className="send-button" onClick={handleSend}>
+              Send
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="no-chat">Select a user to start chatting</div>
+      )}
+    </div>
+  );
+};
+
+export default ChatSection;
+
+import React, { useState } from "react";
+// Add this if you want styles specific to TaskTeam
+import { GoMoveToEnd, GoMoveToStart } from "react-icons/go";
+
+const TaskTeam = () => {
+  const [sidebar, setSidebar] = useState(true);
+  const [isActive, setIsActive] = useState(true); // State for dynamic class
+
+  const toggleSidebar = () => {
+    setSidebar(!sidebar);
+    setIsActive(!isActive); // Toggle the active class state
+  };
+
+  return (
+    <div className="chatmain-container">
+      <div className="hider-container">
+        <button
+          onClick={toggleSidebar}
+          className={`hider ${sidebar ? "sidebar-open" : "sidebar-closed"}`}
+        >
+          {sidebar ? <GoMoveToEnd /> : <GoMoveToStart />}
+        </button>
+      </div>
+
+      <div className={`task-team ${isActive ? "active-sidebar" : "inactive-sidebar"}`}>
+        <div className="team">
+          <div className="task-top">
+            <button className="join-button">Join Meet</button>
+            <button className="create-button">Create Meet</button>
+          </div>
+          <div className="head">
+            <p className="titel-sub-cont">Team</p>
+          </div>
+        </div>
+        <div className="task">
+          <div className="head">
+            <p className="titel-sub-cont">Task</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TaskTeam;
+
+b)MeetPages
+file1: import React, { useState, useRef } from "react";
+import { AppBar, Toolbar, Typography, IconButton, Box, Button } from "@mui/material";
+import VideocamIcon from "@mui/icons-material/Videocam";
+import VideocamOffIcon from "@mui/icons-material/VideocamOff";
+import MicIcon from "@mui/icons-material/Mic";
+import MicOffIcon from "@mui/icons-material/MicOff";
+import CloseIcon from "@mui/icons-material/Close";
+import NoteIcon from "@mui/icons-material/Note";
+import GroupIcon from "@mui/icons-material/Group";
+import ScreenShareIcon from "@mui/icons-material/ScreenShare";
+import CallEndIcon from "@mui/icons-material/CallEnd";
+import SpeechToText from "./SpeechToText";
+import Webcam from "react-webcam"; // Webcam library
+
+const MeetPage = () => {
+  const [attendeesVisible, setAttendeesVisible] = useState(true);
+  const [notesVisible, setNotesVisible] = useState(true);
+  const [isMicOn, setIsMicOn] = useState(true);
+  const [isVideoOn, setIsVideoOn] = useState(true);
+  const [speechOutput, setSpeechOutput] = useState(""); // To store speech-to-text output
+  const webcamRef = useRef(null);
+
+  // Toggle microphone
+  const toggleMic = () => setIsMicOn(!isMicOn);
+
+  // Toggle video
+  const toggleVideo = () => setIsVideoOn(!isVideoOn);
+
+  // Toggle attendees sidebar
+  const toggleAttendees = () => setAttendeesVisible(!attendeesVisible);
+
+  // Toggle notes sidebar
+  const toggleNotes = () => setNotesVisible(!notesVisible);
+
+  // Speech-to-text using Web Speech API
+  const startSpeechToText = () => {
+    if (!("webkitSpeechRecognition" in window)) {
+      alert("Speech recognition not supported in this browser.");
+      return;
+    }
+
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = true;
+
+    recognition.onresult = (event) => {
+      let transcript = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setSpeechOutput(transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+    };
+
+    recognition.start();
+  };
+
+  return (
+    <div>
+      {/* Navbar */}
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Meeting
+          </Typography>
+        </Toolbar>
+      </AppBar>
+
+      {/* Main Layout */}
+      <Box sx={{ display: "flex", height: "80vh" }}>
+        {/* Attendees Sidebar */}
+        {attendeesVisible && (
+          <Box sx={{ width: "20%", backgroundColor: "#f0f0f0", padding: 2 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6">Attendees</Typography>
+              <IconButton size="small" onClick={toggleAttendees}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            <ul>
+              <li>Alice</li>
+              <li>Bob</li>
+            </ul>
+          </Box>
+        )}
+
+        {/* Center - Video Feed */}
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#e0e0e0",
+            border: "2px solid purple",
+            position: "relative",
+          }}
+        >
+          {isVideoOn ? (
+            <Webcam
+              audio={false}
+              ref={webcamRef}
+              style={{
+                width: "80%",
+                height: "auto",
+                borderRadius: "10px",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+              }}
+            />
+          ) : (
+            <Typography variant="h4">Camera Off</Typography>
+          )}
+        </Box>
+
+        {/* Notes Sidebar */}
+        {notesVisible && (
+          <Box sx={{ width: "30%", backgroundColor: "#f7f7f7", padding: 2 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6">Notes</Typography>
+              <IconButton size="small" onClick={toggleNotes}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            <Box
+              sx={{
+                height: "70%",
+                overflowY: "scroll",
+                border: "1px solid #ccc",
+                padding: 1,
+              }}
+            >
+              <Typography variant="body1">{speechOutput || "[Speech-to-text output here]"}</Typography>
+            </Box>
+          </Box>
+        )}
+      </Box>
+
+      {/* Bottom Control Bar */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-evenly",
+          alignItems: "center",
+          padding: 1,
+          backgroundColor: "#f5f5f5",
+        }}
+      >
+        <IconButton color={isMicOn ? "primary" : "secondary"} onClick={toggleMic}>
+          {isMicOn ? <MicIcon /> : <MicOffIcon />}
+        </IconButton>
+        <IconButton color={isVideoOn ? "primary" : "secondary"} onClick={toggleVideo}>
+          {isVideoOn ? <VideocamIcon /> : <VideocamOffIcon />}
+        </IconButton>
+        <Button variant="contained" color="primary" onClick={startSpeechToText}>
+          Start Speech-to-Text
+        </Button>
+        <IconButton color="primary" onClick={toggleNotes}>
+          <NoteIcon />
+        </IconButton>
+        <IconButton color="primary" onClick={toggleAttendees}>
+          <GroupIcon />
+        </IconButton>
+        <IconButton color="error">
+          <CallEndIcon />
+        </IconButton>
+      </Box>
+    </div>
+  );
+};
+
+export default MeetPage;
+
+file2: import React, { useState } from "react";
+
+const SpeechToText = () => {
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [username, setUsername] = useState("User"); // Static username for now
+
+  const startListening = () => {
+    const recognition = new window.SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US"; // Change this based on language preference
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      console.log("Voice recognition started...");
+    };
+
+    recognition.onresult = (event) => {
+      let interimTranscript = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          setTranscript((prev) => `${prev} ${event.results[i][0].transcript}`);
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error", event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      console.log("Voice recognition stopped.");
+    };
+
+    recognition.start();
+  };
+
+  const stopListening = () => {
+    window.SpeechRecognition.stop();
+    setIsListening(false);
+  };
+
+  return (
+    <div style={{ padding: "20px", fontFamily: "Arial" }}>
+      <h1>Speech-to-Text</h1>
+      <p>
+        <strong>Username:</strong> {username}
+      </p>
+      <div style={{ margin: "10px 0" }}>
+        <button
+          onClick={isListening ? stopListening : startListening}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: isListening ? "red" : "green",
+            color: "#fff",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          {isListening ? "Stop Listening" : "Start Listening"}
+        </button>
+      </div>
+      <div style={{ marginTop: "20px", border: "1px solid #ccc", padding: "10px" }}>
+        <h2>Transcript</h2>
+        <p>{transcript}</p>
+      </div>
+    </div>
+  );
+};
+
+export default SpeechToText;
