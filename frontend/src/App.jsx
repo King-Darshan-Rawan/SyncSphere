@@ -12,7 +12,7 @@ import ChatPage from "./Pages/Subjective/ChatPages/ChatPage";
 import SignIn from "./Pages/Permitive/SingIn";
 import SignUp from "./Pages/Permitive/SingUp";
 import ChatList from "./Pages/Subjective/ChatPages/ChatList";
-import Tempp from "./temp/Tempp";
+// import Tempp from "./temp/Tempp";
 function App() {
   return (
     <Router>
