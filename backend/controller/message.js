@@ -26,15 +26,14 @@ let fetchMessage = async(req,res)=>{
         let chat = await Chat.find({_id:chatId});
         if(chat){
             let msg = await Message.find
-
         }else{
             res.status(400).json({msg:"first create a chat"});
         }
-
     }catch(error){
         res.status(400).json({msg:"error is fetching messages"});
     }
-}
+  }
+  
 
 let editMessage = async(req,res)=>{
     
