@@ -2,16 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { IoMdAdd } from "react-icons/io";
 import { GoDeviceCameraVideo } from "react-icons/go";
-import {
-  accessChat,
-  fetchChat,
-  createGroupChat,
-  renameGroup,
-  removeFromGroup,
-  addToGroup,
-} from "../../../../../backend/controller/chat";
-
-
 
 const ChatList = ({ onOpenChat }) => {
   const [users, setUsers] = useState([]); // Full list of users
@@ -63,35 +53,30 @@ const ChatList = ({ onOpenChat }) => {
     }
   }, [searchTerm, users]);
 
-  // Handle chat creation
+  // Handle chat creation via API
   const createChat = async (userId, userName) => {
     try {
       console.log("Sending request to backend with:", {
         loggedInUserId,
         userId,
       });
-  
-      const response = await axios.post("http://localhost:3000/chat/accessChat", {
+
+      const response = await axios.post("http://localhost:3000/chat/createChat", {
         loggedInUserId,
         userId,
       });
-  
+
       console.log("Chat created successfully:", response.data);
-  
+
       // Open chat interface in ChatPage
       if (onOpenChat) {
         onOpenChat({ id: userId, name: userName });
       }
     } catch (error) {
-      console.error(
-        "Error creating chat:",
-        error.response?.data || error.message
-      );
+      console.error("Error creating chat:", error.response?.data || error.message);
       alert("Failed to access chat. Please try again.");
     }
   };
-  
-  
 
   return (
     <div className="chat-list">
@@ -119,21 +104,18 @@ const ChatList = ({ onOpenChat }) => {
                   <span>{user.name || user.userId || "Unnamed User"}</span>
                 </div>
                 <button
-  className="action-btn"
-  onClick={() => {
-    console.log("Creating chat with user:", user);
-if (user?.userId) {
-  createChat(user.userId, user.name || user.userId);
-} else {
-  console.error("Error: userId is missing or undefined for:", user);
-}
-
-  }}
-  
->
-  <IoMdAdd />
-</button>
-
+                  className="action-btn"
+                  onClick={() => {
+                    console.log("Creating chat with user:", user);
+                    if (user?.userId) {
+                      createChat(user.userId, user.name || user.userId);
+                    } else {
+                      console.error("Error: userId is missing or undefined for:", user);
+                    }
+                  }}
+                >
+                  <IoMdAdd />
+                </button>
               </div>
             ))
           : filteredUsers.map((user) => (

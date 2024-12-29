@@ -1,7 +1,7 @@
-import { Chat } from "../models/chat.js";
+import { Chat } from "./../models/chat";
 
 // Create one-on-one chat if it doesn't exist
-const accessChat = async (req, res) => {
+const createChat = async (req, res) => {
   const { loggedInUserId, userId } = req.body;
 
   if (!userId || !loggedInUserId) {
@@ -124,8 +124,8 @@ const addToGroup = async (req, res) => {
   }
 };
 
-export {
-  accessChat,
+export default{
+  createChat,
   fetchChat,
   createGroupChat,
   renameGroup,

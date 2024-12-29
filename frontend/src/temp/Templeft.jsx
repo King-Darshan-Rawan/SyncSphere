@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // import React, { useState, useEffect } from "react";
 // import axios from "axios";
 // import { IoMdAdd } from "react-icons/io";
@@ -10,6 +11,20 @@
 //   removeFromGroup,
 //   addtoGroup,
 // } from "../../../../../backend/controller/chat";
+=======
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { IoMdAdd } from "react-icons/io";
+import { GoDeviceCameraVideo } from "react-icons/go";
+import {
+  createChat,
+  fetchChat,
+  createGroupChat,
+  renameGroup,
+  removeFromGroup,
+  
+} from "../../../backend/controller/chat"
+>>>>>>> c5fb6a1ea9c5e1200df0363842325bca6e29e936
 
 
 

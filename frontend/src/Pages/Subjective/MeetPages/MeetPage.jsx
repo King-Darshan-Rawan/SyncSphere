@@ -1,5 +1,12 @@
 import React, { useState, useRef } from "react";
-import { AppBar, Toolbar, Typography, IconButton, Box, Button } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Box,
+  Button,
+} from "@mui/material";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import VideocamOffIcon from "@mui/icons-material/VideocamOff";
 import MicIcon from "@mui/icons-material/Mic";
@@ -7,10 +14,8 @@ import MicOffIcon from "@mui/icons-material/MicOff";
 import CloseIcon from "@mui/icons-material/Close";
 import NoteIcon from "@mui/icons-material/Note";
 import GroupIcon from "@mui/icons-material/Group";
-import ScreenShareIcon from "@mui/icons-material/ScreenShare";
 import CallEndIcon from "@mui/icons-material/CallEnd";
-import SpeechToText from "./SpeechToText";
-import Webcam from "react-webcam"; // Webcam library
+import Webcam from "react-webcam";
 
 const MeetPage = () => {
   const [attendeesVisible, setAttendeesVisible] = useState(true);
@@ -21,25 +26,28 @@ const MeetPage = () => {
   const webcamRef = useRef(null);
 
   // Toggle microphone
-  const toggleMic = () => setIsMicOn(!isMicOn);
+  const toggleMic = () => setIsMicOn((prevState) => !prevState);
 
   // Toggle video
-  const toggleVideo = () => setIsVideoOn(!isVideoOn);
+  const toggleVideo = () => setIsVideoOn((prevState) => !prevState);
 
   // Toggle attendees sidebar
-  const toggleAttendees = () => setAttendeesVisible(!attendeesVisible);
+  const toggleAttendees = () => setAttendeesVisible((prevState) => !prevState);
 
   // Toggle notes sidebar
-  const toggleNotes = () => setNotesVisible(!notesVisible);
+  const toggleNotes = () => setNotesVisible((prevState) => !prevState);
 
   // Speech-to-text using Web Speech API
   const startSpeechToText = () => {
-    if (!("webkitSpeechRecognition" in window)) {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
       alert("Speech recognition not supported in this browser.");
       return;
     }
 
-    const recognition = new window.webkitSpeechRecognition();
+    const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
     recognition.continuous = true;
 
@@ -48,7 +56,7 @@ const MeetPage = () => {
       for (let i = event.resultIndex; i < event.results.length; i++) {
         transcript += event.results[i][0].transcript;
       }
-      setSpeechOutput(transcript);
+      setSpeechOutput((prev) => prev + transcript);
     };
 
     recognition.onerror = (event) => {
@@ -132,7 +140,9 @@ const MeetPage = () => {
                 padding: 1,
               }}
             >
-              <Typography variant="body1">{speechOutput || "[Speech-to-text output here]"}</Typography>
+              <Typography variant="body1">
+                {speechOutput || "[Speech-to-text output here]"}
+              </Typography>
             </Box>
           </Box>
         )}

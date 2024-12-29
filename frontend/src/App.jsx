@@ -25,9 +25,9 @@ function App() {
         <Route path="/meet" element={<MeetPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/chat/:chatid" element={<ChatList />} />
-        <Route path="/SignIn" element={<SignIn />} />
-        <Route path="/SingUp" element={<SignUp />} />
-        <Route path="/temp" element={<Tempp />}/>
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+        {/* <Route path="/temp" element={<Tempp />}/> */}
       </Routes>
       <br />
       <br />
