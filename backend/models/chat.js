@@ -8,6 +8,9 @@ const ChatSchema = new mongoose.Schema({
           oneToOneUser: [
             {
               User2: { type: String, required: true }, // Second user in one-to-one chat
+              latestMessage:{
+                type: String,required:false
+              },
               Message: {
                 type: mongoose.Schema.Types.ObjectId, // Reference to the Message collection
                 ref: "Message",

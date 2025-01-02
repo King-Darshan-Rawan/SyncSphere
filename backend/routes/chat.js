@@ -1,5 +1,5 @@
 
-  import { createGroupChat , createOneToOneChat ,removeUserFromGroup ,addUserToGroup , fetchChatById ,fetchOneToOneChats ,fetchGroupChats} from "../controller/chat.js"
+  import { createGroupChat , createOneToOneChat ,removeUserFromGroup ,addUserToGroup , fetchChatById ,fetchOneToOneChat ,fetchGroupChats} from "../controller/chat.js"
 
 import express from "express";
 const router = express.Router();
@@ -7,8 +7,8 @@ const router = express.Router();
 router.route("/createOneToOneChat")
 .post(createOneToOneChat)
 
-router.route("/fetchOneToOneChats")
-.get(fetchOneToOneChats)
+router.route("/fetchOneToOneChat")
+.get(fetchOneToOneChat)
 
 router.route("/createGroupChat")
 .post(createGroupChat)

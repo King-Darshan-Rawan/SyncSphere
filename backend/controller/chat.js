@@ -18,22 +18,39 @@ const createOneToOneChat = async (req, res) => {
       "Users.oneToOneUser.User2": receiver,
     });
 
-    console.log(existingChat);
+    console.log({existingChat:existingChat});
 
     if (existingChat) {
-      // If the chat exists, directly return it without creating a new one
-      return res.status(200).json(existingChat);
+  
+      const existingChatwithUser2 = await Chat.findOne({
+        isGroupChat: false,
+        sender:sender,
+        "Users.oneToOneUser.User2": receiver,
+        // Users:[{oneToOneUser:[{User2:receiver}]}],
+      });
+
+      console.log({existingChatwithUser2:existingChatwithUser2});
+
+      if(existingChatwithUser2){
+        return res.status(200).json(existingChat);
+      }
+
+      const createOnetoOne = await Chat.findOneAndUpdate(
+      { sender: sender, isGroupChat: false },
+      {
+       $push: { "Users.0.oneToOneUser": { User2: receiver } }
+      },
+      { new: true, runValidators: true }
+      )
+      console.log({createOnetoOne:createOnetoOne});
+      return res.status(200).json(createOnetoOne);
     }
 
-    console.log("Creating new chat...");
-
-    // If no existing chat is found, create a new one
-    const newChat = await Chat.create({
-      sender: sender,
-      Users: [{ oneToOneUser: [{ User2: receiver }] }], 
+    const newChat = await Chat.insertMany({
+      sender : sender,
+      Users: [{ oneToOneUser: [{ User2:receiver }] }],
     });
-
-    console.log(newChat);
+    console.log({newChat:newChat});
 
     return res.status(201).json(newChat); // Respond with the new chat creation
   } catch (error) {
@@ -45,10 +62,24 @@ const createOneToOneChat = async (req, res) => {
 
 
 // Fetch one to one chats for a user
-const fetchOneToOneChats = async (req, res) => {
+const fetchOneToOneChat = async (req, res) => {
+  let {sender} = req.body;
   try {
-    const { userId } = req.query;
+    // Fetch all chats
+    const chats = await Chat.find({sender:sender})
+    .populate({
+      path: "Users.oneToOneUser.Message",
+      select: "text createdAt",
+      options: { strictPopulate: false }, // Ensure no error if empty
+    })
+    .populate({
+      path: "Users.groupUsers.Message",
+      select: "text createdAt",
+      options: { strictPopulate: false }, // Ensure no error if empty
+    })
+      .lean(); // Convert Mongoose documents to plain objects
 
+<<<<<<< HEAD
     if (!userId) {
       return res.status(400).json({ error: "User ID is required." });
     }
@@ -70,8 +101,62 @@ const fetchOneToOneChats = async (req, res) => {
   } catch (error) {
     console.error("Error fetching one-to-one chats:", error.message);
     res.status(500).json({ error: error.message });
+=======
+    // Structure the response
+    const response = Object.values(
+      chats.reduce((acc, chat) => {
+        // If sender is not already in the accumulator, initialize it
+        if (!acc[chat.sender]) {
+          acc[chat.sender] = {
+            sender: chat.sender,
+            isGroupChat: chat.isGroupChat,
+            oneToOneUsers: [],
+            groupUsers: [],
+          };
+        }
+    
+        // Merge oneToOneUsers
+        acc[chat.sender].oneToOneUsers.push(
+          ...(chat.Users[0]?.oneToOneUser.map((user) => ({
+            userName: user.User2,
+            latestMessage: user.latestMessage || null,
+          })) || [])
+        );
+    
+        // Merge groupUsers
+        acc[chat.sender].groupUsers.push(
+          ...(chat.Users[1]?.groupUsers.map((group) => ({
+            groupName: group.groupName,
+            userId: group.userId,
+            latestMessage: group.Message?.text || null,
+          })) || [])
+        );
+    
+        return acc;
+      }, {})
+    );
+
+    response.forEach((entry) => {
+      const seen = new Set();
+      entry.oneToOneUsers = entry.oneToOneUsers.filter((user) => {
+        const key = user.userName; // Use `userName` as a unique identifier
+        if (seen.has(key)) {
+          return false;
+        }
+        seen.add(key);
+        return true;
+      });
+    });
+
+    console.log(response);
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error("Error fetching users with latest messages:", error);
+    return res.status(500).json({ error: error.message });
+>>>>>>> 154d1669b2f70d499a9bd0a462e619c61383a2ad
   }
-};
+}
 
 
 
@@ -185,7 +270,7 @@ export{
   createGroupChat,
   createOneToOneChat,
   fetchChatById,
-  fetchOneToOneChats,
+  fetchOneToOneChat,
   fetchGroupChats,
   addUserToGroup,
   removeUserFromGroup

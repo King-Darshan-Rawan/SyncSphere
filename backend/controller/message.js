@@ -2,29 +2,58 @@ import { Message } from "../models/message.js";
 import { Chat } from "../models/chat.js";
 
 const sendMessage = async (req, res) => {
-    try {
-      const { chatId, receiverId, text } = req.body;
-  
-      const newMessage = new Message({
-        chatId,
-        receiverId,
-        text,
-      });
-  
-      const savedMessage = await newMessage.save();
-  
-      // Optionally, you can update the Chat with the latest message
-      const chat = await Chat.findByIdAndUpdate(
-        chatId,
-        { $set: { "Users.oneToOneUser.Message": savedMessage._id } },
-        { new: true }
-      );
-  
-      res.status(201).json(savedMessage);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+  const { chatId, receiver, text } = req.body;
+  console.log(chatId , receiver , text);
+
+  try {
+    // Validate the required fields
+    if (!chatId  || !receiver || !text) {
+      return res.status(400).json({ error: "All fields are required." });
     }
-  };
+
+    // Create a new message
+    const newMessage = await Message.create({
+      chatId: chatId,
+      receiverId: receiver,
+      text: text,
+    });
+
+    console.log(newMessage);
+
+
+
+    // Find the chat and update it with the new message reference
+    const updatedChat = await Chat.findByIdAndUpdate(
+      chatId,
+      {
+        $set: {
+          // "Users.0.oneToOneUser.$[elem].Message": newMessage._id,
+          "Users.0.oneToOneUser.$[elem].latestMessage": newMessage.text,
+        },
+        $push: {
+          // "Users.0.oneToOneUser.$[elem].latestMessage": newMessage.text,
+          "Users.0.oneToOneUser.$[elem].Message": newMessage._id,
+        },
+      },
+      {
+        new: true,
+        arrayFilters: [{ "elem.User2": receiver }], // Update the specific one-to-one user
+        runValidators: true,
+      }
+    );
+
+
+    if (!updatedChat) {
+      return res.status(404).json({ error: "Chat not found." });
+    }
+
+    // Respond with the newly created message
+    return res.status(201).json(newMessage);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: error.message });
+  }
+};
   
 
   const fetchMessages = async (req, res) => {
