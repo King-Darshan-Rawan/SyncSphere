@@ -79,29 +79,6 @@ const fetchOneToOneChat = async (req, res) => {
     })
       .lean(); // Convert Mongoose documents to plain objects
 
-<<<<<<< HEAD
-    if (!userId) {
-      return res.status(400).json({ error: "User ID is required." });
-    }
-
-    // Query to find all one-to-one chats involving the user as either sender or receiver
-    const oneToOneChats = await Chat.find({
-      isGroupChat: false,
-      $or: [
-        { sender: userId },
-        { "Users.oneToOneUser.User2": userId }
-      ]
-    }).populate("Users.oneToOneUser.Message");
-
-    if (!oneToOneChats.length) {
-      return res.status(404).json({ message: "No chats found for this user." });
-    }
-
-    res.status(200).json(oneToOneChats);
-  } catch (error) {
-    console.error("Error fetching one-to-one chats:", error.message);
-    res.status(500).json({ error: error.message });
-=======
     // Structure the response
     const response = Object.values(
       chats.reduce((acc, chat) => {
@@ -154,7 +131,6 @@ const fetchOneToOneChat = async (req, res) => {
   } catch (error) {
     console.error("Error fetching users with latest messages:", error);
     return res.status(500).json({ error: error.message });
->>>>>>> 154d1669b2f70d499a9bd0a462e619c61383a2ad
   }
 }
 
