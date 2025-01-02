@@ -8,7 +8,7 @@ const ChatList = ({ onOpenChat }) => {
   const [filteredUsers, setFilteredUsers] = useState([]); // Filtered users
   const [searchedUsers, setSearchedUsers] = useState([]); // Users from API search
   const [searchTerm, setSearchTerm] = useState(""); // Search term
-  const loggedInUserId = "currentLoggedInUserId"; // Replace with actual logged-in user ID.
+  const loggedInUserId = localStorage.getItem('userId'); // Replace with actual logged-in user ID.
 
   // Fetch users from API based on search
   const searchUsers = async (searchQuery) => {
@@ -38,7 +38,7 @@ const ChatList = ({ onOpenChat }) => {
       } catch (error) {
         if (error.response && error.response.status === 404) {
           console.error("API endpoint not found: 404", error);
-          alert("Users API endpoint not found. Please check your server configuration.");
+          // alert("Users API endpoint not found. Please check your server configuration.");
         } else {
           console.error("Error fetching initial users:", error);
         }
@@ -50,38 +50,46 @@ const ChatList = ({ onOpenChat }) => {
 
   // Trigger search when searchTerm changes
   useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setSearchedUsers([]); // Clear searched users
-      setFilteredUsers(users); // Reset to full user list
-    } else {
-      searchUsers(searchTerm.trim());
-    }
+    const delayDebounce = setTimeout(() => {
+      if (searchTerm.trim()) {
+        searchUsers(searchTerm.trim());
+      } else {
+        setSearchedUsers([]);
+        setFilteredUsers(users);
+      }
+    }, 300); // 300ms debounce
+    return () => clearTimeout(delayDebounce);
   }, [searchTerm, users]);
+  
 
   // Handle chat creation via API
   const createChat = async (userId, userName) => {
     try {
-      console.log("Sending request to backend with:", {
-        loggedInUserId,
-        userId,
+      const sender = localStorage.getItem("userId"); // Ensure sender ID is stored
+      if (!sender) throw new Error("Logged-in user ID is missing.");
+      if (!userId) throw new Error("Receiver user ID is missing.");
+  
+      console.log("📤 Sending request to backend with:", { sender, receiver: userId });
+  
+      const response = await axios.post("http://localhost:3001/chat/createOneToOneChat", {
+        sender,
+        receiver: userId,
       });
-
-      const response = await axios.post("http://localhost:3001/chat/createChat", {
-        loggedInUserId,
-        userId,
-      });
-
-      console.log("Chat created successfully:", response.data);
-
-      // Open chat interface in ChatPage
+  
+      console.log("✅ Chat created successfully:", response.data);
+  
       if (onOpenChat) {
         onOpenChat({ id: userId, name: userName });
+        console.log(userId)
       }
     } catch (error) {
-      console.error("Error creating chat:", error.response?.data || error.message);
-      alert("Failed to access chat. Please try again.");
+      console.error("❌ Error creating chat:", error.response?.data || error.message);
+      alert("Failed to create or access chat.");
     }
   };
+  
+  
+  
 
   return (
     <div className="chat-list">

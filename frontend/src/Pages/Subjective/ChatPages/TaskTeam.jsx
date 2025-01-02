@@ -4,11 +4,11 @@ import { GoMoveToEnd, GoMoveToStart } from "react-icons/go";
 
 const TaskTeam = () => {
   const [sidebar, setSidebar] = useState(true);
-  const [isActive, setIsActive] = useState(true); // State for dynamic class
+  const [isActive, setIsActive] = useState(true);
 
   const toggleSidebar = () => {
     setSidebar(!sidebar);
-    setIsActive(!isActive); // Toggle the active class state
+    setIsActive(!isActive);
   };
 
   return (
@@ -21,8 +21,11 @@ const TaskTeam = () => {
           {sidebar ? <GoMoveToEnd /> : <GoMoveToStart />}
         </button>
       </div>
-
-      <div className={`task-team ${isActive ? "active-sidebar" : "inactive-sidebar"}`}>
+      <div
+        className={`task-team ${
+          isActive ? "active-sidebar" : "inactive-sidebar"
+        }`}
+      >
         <div className="team">
           <div className="task-top">
             <button className="join-button">Join Meet</button>

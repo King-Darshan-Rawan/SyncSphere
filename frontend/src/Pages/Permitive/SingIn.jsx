@@ -36,7 +36,7 @@ export default function SignIn() {
     }
 
     localStorage.setItem("token", token); // Save the token
-    localStorage.setItem("userId", userId); // Save the userId
+    localStorage.setItem("userId", userConfirm); // Save the userId
 
     navigate("/chat");
   } catch (err) {

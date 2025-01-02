@@ -2,78 +2,77 @@ import { Chat } from "../models/chat.js";
 
 // Create one-on-one chat if it doesn't exist
 const createOneToOneChat = async (req, res) => {
-  
-    const { sender, receiver } = req.body;
-    try {
+  const { sender, receiver } = req.body;
 
+  try {
     if (!sender || !receiver) {
       return res.status(400).json({ error: "Sender and receiver must be provided." });
     }
 
-    console.log(sender , receiver);
+    console.log(sender, receiver);
 
+    // Check if there's an existing chat between the sender and receiver
     const existingChat = await Chat.findOne({
       isGroupChat: false,
-      sender
-      // ,"Users.oneToOneUser.type": receiver,
+      sender,
+      "Users.oneToOneUser.User2": receiver,
     });
 
     console.log(existingChat);
 
     if (existingChat) {
-  
-      const existingChatwithUser2 = await Chat.findOne({
-        isGroupChat: false,
-        sender:sender,
-        "Users.oneToOneUser.User2": receiver,
-        // Users:[{oneToOneUser:[{User2:receiver}]}],
-      });
-
-      console.log(existingChatwithUser2);
-
-      if(existingChatwithUser2){
-        return res.status(200).json(existingChat);
-      }
-      console.log("3");
-      const createOnetoOne = await Chat.findOneAndUpdate(
-      { sender: sender, isGroupChat: false },
-      { $push: { "Users.0.oneToOneUser": { User2: receiver } } },
-      // { new: true, runValidators: true }
-      )
-      console.log(createOnetoOne);
-      res.status(200).json(createOnetoOne);
+      // If the chat exists, directly return it without creating a new one
+      return res.status(200).json(existingChat);
     }
 
-    console.log("new");
+    console.log("Creating new chat...");
 
-    const newChat = await Chat.insertMany({
-      sender : sender,
-      Users: [{ oneToOneUser: [{ User2:receiver }] }],
+    // If no existing chat is found, create a new one
+    const newChat = await Chat.create({
+      sender: sender,
+      Users: [{ oneToOneUser: [{ User2: receiver }] }], 
     });
+
     console.log(newChat);
 
-    // const savedChat = await newChat.save();
-    res.status(201).json(newChat);
+    return res.status(201).json(newChat); // Respond with the new chat creation
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error:", error.message);
+    return res.status(500).json({ error: error.message }); // Ensure error response is the last
   }
 };
+
+
 
 // Fetch one to one chats for a user
 const fetchOneToOneChats = async (req, res) => {
   try {
     const { userId } = req.query;
 
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required." });
+    }
+
+    // Query to find all one-to-one chats involving the user as either sender or receiver
     const oneToOneChats = await Chat.find({
       isGroupChat: false,
-      "Users.oneToOneUser": userId,
+      $or: [
+        { sender: userId },
+        { "Users.oneToOneUser.User2": userId }
+      ]
     }).populate("Users.oneToOneUser.Message");
+
+    if (!oneToOneChats.length) {
+      return res.status(404).json({ message: "No chats found for this user." });
+    }
 
     res.status(200).json(oneToOneChats);
   } catch (error) {
+    console.error("Error fetching one-to-one chats:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
+
 
 
 //fetch chat by ID

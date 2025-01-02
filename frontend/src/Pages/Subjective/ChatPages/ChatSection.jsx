@@ -1,7 +1,12 @@
-import React, { useState } from "react";
- // Add this if you want styles specific to ChatSection
+import React, { useState } from "react"; // Import useState
+import { FaMicrophoneAlt } from "react-icons/fa";
 
-const ChatSection = ({ selectedUser, chatMessages, onSendMessage, onVoiceMessage }) => {
+const ChatSection = ({
+  selectedUser,
+  chatMessages,
+  onSendMessage,
+  onVoiceMessage,
+}) => {
   const [messageText, setMessageText] = useState("");
 
   const handleSend = () => {
@@ -15,12 +20,14 @@ const ChatSection = ({ selectedUser, chatMessages, onSendMessage, onVoiceMessage
     <div className="chat-section">
       {selectedUser ? (
         <>
-          <div className="chat-header">{selectedUser.name}</div>
+          <div className="chat-header">Chatting with: {selectedUser.name}</div>
           <div className="chat-messages">
-            {chatMessages.map((msg) => (
+            {chatMessages.map((msg, index) => (
               <div
-                key={msg.id}
-                className={`chat-message ${msg.sender === "me" ? "sent" : "received"}`}
+                key={index}
+                className={`chat-message ${
+                  msg.sender === "me" ? "sent" : "received"
+                }`}
               >
                 {msg.text}
               </div>
@@ -32,8 +39,11 @@ const ChatSection = ({ selectedUser, chatMessages, onSendMessage, onVoiceMessage
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
             ></textarea>
-            <button className="record-button" onClick={() => onVoiceMessage("Voice message attached!")}>
-              🎤
+            <button
+              className="record-button"
+              onClick={() => onVoiceMessage("Voice message attached!")}
+            >
+              <FaMicrophoneAlt />
             </button>
             <button className="send-button" onClick={handleSend}>
               Send

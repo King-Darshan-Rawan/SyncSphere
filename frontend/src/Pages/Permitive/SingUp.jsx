@@ -41,6 +41,7 @@ export default function SignUp() {
       })
       .then((data) => {
         console.log("SignUp successful", data);
+        localStorage.setItem("userId", userName)
         // Optionally redirect or notify the user
         navigate("/chat");
       })
